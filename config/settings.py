@@ -31,8 +31,8 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-m^d@*ydm)@k3m__i))r0o@5b^s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1").split(",")
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else []
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,.herokuapp.com").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://*.herokuapp.com").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else ["https://*.herokuapp.com"]
 
 
 # Application definition
