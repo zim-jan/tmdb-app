@@ -11,4 +11,12 @@ dependencies = [
     "pyright>=1.1.408",
     "ruff>=0.14.13",
     "django-stubs>=5.2.8",
+    "pytest>=9.0.2",
+    "pytest-django>=4.11.1",
 ]
+
+[tool.pytest.ini_options]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--ds=config.settings"
