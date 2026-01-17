@@ -1,0 +1,39 @@
+line-length = 320
+target-version = "py312"
+exclude = [
+    ".git",
+    ".venv",
+    "__pycache__",
+    "*/migrations/*",
+    "staticfiles",
+    "manage.py",
+]
+
+lint.select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+    "ANN", # flake8-annotations
+    "S",   # flake8-bandit
+    "T20", # flake8-print
+    "SIM", # flake8-simplify
+]
+
+lint.ignore = [
+    "ANN401", # Dynamically typed expressions (Any)
+    "S101",   # Use of assert
+]
+
+[lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"*/migrations/*.py" = ["E501", "ANN", "S"]
+"*/tests/*.py" = ["S101", "ANN"]
+"manage.py" = ["T20"]
+
+[lint.isort]
+known-first-party = ["users", "lists", "media", "profiles", "core", "config"]
+section-order = ["future", "standard-library", "third-party", "first-party", "local-folder"]

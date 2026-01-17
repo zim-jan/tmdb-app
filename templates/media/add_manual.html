@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Dodaj film/serial ręcznie{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 800px; padding: 2rem;">
+    <h1 style="font-size: 2.5rem; font-weight: 800; margin-bottom: 1rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">
+        Dodaj film/serial ręcznie
+    </h1>
+    
+    <p style="color: var(--text-secondary); margin-bottom: 2rem;">
+        Wypełnij poniższy formularz, aby dodać film lub serial, którego nie ma w bazie TMDb.
+    </p>
+
+    <form method="post" style="background: var(--bg-secondary); padding: 2rem; border-radius: 12px;">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Tytuł <span style="color: #ef4444;">*</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+                <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">{{ form.title.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_media_type" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Typ <span style="color: #ef4444;">*</span>
+            </label>
+            {{ form.media_type }}
+            {% if form.media_type.errors %}
+                <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">{{ form.media_type.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_original_title" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Tytuł oryginalny
+            </label>
+            {{ form.original_title }}
+            {% if form.original_title.errors %}
+                <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">{{ form.original_title.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_release_date" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Data premiery
+            </label>
+            {{ form.release_date }}
+            {% if form.release_date.errors %}
+                <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">{{ form.release_date.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        <div style="margin-bottom: 1.5rem;">
+            <label for="id_overview" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Opis
+            </label>
+            {{ form.overview }}
+            {% if form.overview.errors %}
+                <p style="color: #ef4444; margin-top: 0.5rem; font-size: 0.875rem;">{{ form.overview.errors.0 }}</p>
+            {% endif %}
+        </div>
+
+        {% if user_lists %}
+        <div style="margin-bottom: 1.5rem;">
+            <label for="list_id" style="display: block; margin-bottom: 0.5rem; font-weight: 600; color: var(--text-primary);">
+                Dodaj do listy (opcjonalnie)
+            </label>
+            <select name="list_id" id="list_id" class="form-control">
+                <option value="">-- Nie dodawaj do listy --</option>
+                {% for list in user_lists %}
+                    <option value="{{ list.id }}">{{ list.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem; margin-top: 2rem;">
+            <button type="submit" class="btn btn-primary">
+                Dodaj do bazy
+            </button>
+            <a href="{% url 'media:search' %}" class="btn btn-secondary">
+                Anuluj
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

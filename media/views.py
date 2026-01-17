@@ -1,0 +1,428 @@
+
+"""
+Views for media browsing and management.
+
+This module contains views for searching and adding media to lists.
+"""
+
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
+
+from lists.models import List
+from lists.services import ListService
+from media.forms import ManualMediaForm
+from media.models import Media, TVShow, WatchedEpisode
+from media.services import EpisodeTrackingService, MediaService, TMDbService
+
+
+@login_required
+def browse_view(request: HttpRequest) -> HttpResponse:
+    """
+    Browse all media in the database.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered browse page.
+    """
+    media_type = request.GET.get("type", "all")
+
+    if media_type == "movie":
+        media_list = Media.objects.filter(media_type="MOVIE").order_by("-created_at")[:20]
+    elif media_type == "tv":
+        media_list = Media.objects.filter(media_type="TV_SHOW").order_by("-created_at")[:20]
+    else:
+        media_list = Media.objects.all().order_by("-created_at")[:20]
+
+    # Enrich media with TMDb data
+    tmdb_service = TMDbService()
+    enriched_media = []
+
+    for media in media_list:
+        media_dict = {
+            'id': media.id,
+            'tmdb_id': media.tmdb_id,
+            'title': media.title,
+            'media_type': media.media_type.lower().replace('_show', ''),
+            'overview': media.overview or '',
+            'release_date': media.release_date,
+            'poster_path': None,
+            'backdrop_path': None,
+            'rating': 0,
+        }
+
+        # Try to get additional data from TMDb (only if tmdb_id exists)
+        if media.tmdb_id:
+            try:
+                details = tmdb_service.get_movie_details(media.tmdb_id) if media.media_type == 'MOVIE' else tmdb_service.get_tv_details(media.tmdb_id)
+
+                media_dict['poster_path'] = details.get('poster_path')
+                media_dict['backdrop_path'] = details.get('backdrop_path')
+                media_dict['rating'] = details.get('vote_average', 0)
+                if not media_dict['overview']:
+                    media_dict['overview'] = details.get('overview', '')
+            except Exception:
+                pass  # Use basic data if TMDb fails
+
+        enriched_media.append(media_dict)
+
+    # Get user's lists for the dropdown
+    user_lists = List.objects.filter(user=request.user).order_by('name')
+
+    return render(request, "media/browse.html", {
+        "media_list": enriched_media,
+        "media_type": media_type,
+        "user_lists": user_lists,
+    })
+
+
+@login_required
+def search_view(request: HttpRequest) -> HttpResponse:
+    """
+    Search for media using TMDb API.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered search page with results.
+    """
+    query = request.GET.get("q", "")
+    media_type = request.GET.get("type")
+    sort_by = request.GET.get("sort", "relevance")
+    results = []
+
+    if query:
+        media_service = MediaService()
+        try:
+            results = media_service.search_media(query, media_type, enrich=True)
+
+            # Apply sorting
+            if sort_by == "title":
+                results.sort(key=lambda x: x.get("title", "").lower())
+            elif sort_by == "rating":
+                results.sort(key=lambda x: x.get("rating", 0), reverse=True)
+            elif sort_by == "date":
+                results.sort(key=lambda x: x.get("release_date") or x.get("first_air_date", ""), reverse=True)
+            # Default is relevance (TMDb order)
+
+        except Exception as e:
+            messages.error(request, f"Search error: {str(e)}")
+            messages.info(request, "TMDb API is currently unavailable. You can add media manually.")
+
+
+    # Get user's lists for the dropdown
+    user_lists = List.objects.filter(user=request.user).order_by('name')
+
+    return render(request, "media/search.html", {
+        "query": query,
+        "results": results,
+        "media_type": media_type,
+        "sort_by": sort_by,
+        "user_lists": user_lists,
+    })
+
+
+@login_required
+def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
+    """
+    Display media details.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+    media_id : int
+        ID of the media to display.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered media detail page.
+    """
+    media = get_object_or_404(Media, id=media_id)
+    list_service = ListService()
+    user_lists = list_service.get_user_lists(request.user)
+
+    # Get TMDb details for enriched display
+    tmdb_service = TMDbService()
+    tmdb_data = None
+    cast = []
+    directors = []
+
+    # Only fetch TMDb data if tmdb_id exists
+    if media.tmdb_id:
+        try:
+            if media.media_type == 'MOVIE':
+                details = tmdb_service.get_movie_details(media.tmdb_id)
+
+                # Get TMDb external IDs
+                external_ids = tmdb_service._make_request(f'/movie/{media.tmdb_id}/external_ids')
+                details['imdb_id'] = external_ids.get('imdb_id')
+
+                # Get credits (cast and crew)
+                credits = tmdb_service.get_movie_credits(media.tmdb_id)
+                cast = credits.get('cast', [])[:15]  # Top 15 cast members
+                crew = credits.get('crew', [])
+                directors = [person['name'] for person in crew if person.get('job') == 'Director'][:3]
+            else:
+                details = tmdb_service.get_tv_details(media.tmdb_id)
+                # Get TMDb external IDs
+                external_ids = tmdb_service._make_request(f'/tv/{media.tmdb_id}/external_ids')
+                details['imdb_id'] = external_ids.get('imdb_id')
+
+                # Get credits (cast and crew)
+                credits = tmdb_service.get_tv_credits(media.tmdb_id)
+                cast = credits.get('cast', [])[:15]  # Top 15 cast members
+                crew = credits.get('crew', [])
+                directors = [person['name'] for person in crew if person.get('job') == 'Director'][:3]
+
+            tmdb_data = details
+        except Exception:
+            import traceback
+            traceback.print_exc()
+            pass  # Use basic data if TMDb fails
+
+    # Check if it's a TV show and get watch progress
+    watched_episodes = []
+    watched_episodes_set = set()
+    progress = None
+    if media.media_type == "TV_SHOW":
+        tv_show = TVShow.objects.get(id=media_id)
+        tracking_service = EpisodeTrackingService()
+        watched_episodes = tracking_service.get_watched_episodes(request.user, tv_show)
+        # Create a set of (season, episode) tuples for easy lookup
+        watched_episodes_set = {(ep.season_number, ep.episode_number) for ep in watched_episodes}
+        progress = tracking_service.get_watch_progress(request.user, tv_show)
+
+    return render(request, "media/detail.html", {
+        "media": media,
+        "user_lists": user_lists,
+        "watched_episodes": watched_episodes,
+        "watched_episodes_set": watched_episodes_set,
+        "progress": progress,
+        "tmdb_data": tmdb_data,
+        "cast": cast,
+        "directors": directors,
+    })
+
+
+@login_required
+@require_POST
+def add_to_list_view(request: HttpRequest) -> HttpResponse:
+    """
+    Add media to a list from TMDb or existing media.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Redirect to appropriate page.
+    """
+    list_id = request.POST.get("list_id")
+    tmdb_id = request.POST.get("tmdb_id")
+    media_type = request.POST.get("media_type")
+    media_id = request.POST.get("media_id")
+
+    if not list_id:
+        messages.error(request, "No list specified")
+        return redirect("lists:my_lists")
+
+    list_obj = get_object_or_404(List, id=list_id, user=request.user)
+    list_service = ListService()
+    media_service = MediaService()
+
+    try:
+        # If media already exists in DB
+        if media_id:
+            media = get_object_or_404(Media, id=media_id)
+        # Otherwise fetch from TMDb
+        elif tmdb_id and media_type:
+            # Normalize media_type from template format (movie/tv) to model format (MOVIE/TV_SHOW)
+            normalized_type = "MOVIE" if media_type.lower() == "movie" else "TV_SHOW"
+            media = media_service.create_media_from_tmdb(
+                tmdb_id=int(tmdb_id),
+                media_type=normalized_type,
+            )
+        else:
+            messages.error(request, "Invalid media information")
+            return redirect("lists:detail", list_id=list_id)
+
+        list_service.add_media_to_list(list_obj, media)
+        messages.success(request, f"'{media.title}' added to '{list_obj.name}'")
+        return redirect("lists:detail", list_id=list_id)
+
+    except ValueError as e:
+        messages.error(request, str(e))
+        return redirect("lists:detail", list_id=list_id)
+    except Exception as e:
+        messages.error(request, f"Error adding media: {str(e)}")
+        return redirect("lists:detail", list_id=list_id)
+
+
+@login_required
+@require_POST
+def mark_episode_watched_view(request: HttpRequest, tv_show_id: int) -> HttpResponse:
+    """
+    Mark an episode as watched.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+    tv_show_id : int
+        ID of the TV show.
+
+    Returns
+    -------
+    HttpResponse
+        Redirect to media detail page.
+    """
+    tv_show = get_object_or_404(TVShow, id=tv_show_id)
+    season = request.POST.get("season")
+    episode = request.POST.get("episode")
+
+    if not season or not episode:
+        messages.error(request, "Season and episode numbers required")
+        return redirect("media:detail", media_id=tv_show_id)
+
+    tracking_service = EpisodeTrackingService()
+    try:
+        tracking_service.mark_episode_watched(
+            user=request.user,
+            tv_show=tv_show,
+            season_number=int(season),
+            episode_number=int(episode),
+        )
+        messages.success(request, f"Marked {tv_show.title} S{season}E{episode} as watched")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
+
+    return redirect("media:detail", media_id=tv_show_id)
+
+
+@login_required
+@require_POST
+def unmark_episode_watched_view(request: HttpRequest, tv_show_id: int) -> HttpResponse:
+    """
+    Unmark an episode as watched.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+    tv_show_id : int
+        ID of the TV show.
+
+    Returns
+    -------
+    HttpResponse
+        Redirect to media detail page.
+    """
+    tv_show = get_object_or_404(TVShow, id=tv_show_id)
+    season = request.POST.get("season")
+    episode = request.POST.get("episode")
+
+    if not season or not episode:
+        messages.error(request, "Season and episode numbers required")
+        return redirect("media:detail", media_id=tv_show_id)
+
+    tracking_service = EpisodeTrackingService()
+    try:
+        tracking_service.unmark_episode_watched(
+            user=request.user,
+            tv_show=tv_show,
+            season_number=int(season),
+            episode_number=int(episode),
+        )
+        messages.success(request, f"Unmarked {tv_show.title} S{season}E{episode}")
+    except Exception as e:
+        messages.error(request, f"Error: {str(e)}")
+
+    return redirect("media:detail", media_id=tv_show_id)
+
+
+@login_required
+def watch_history_view(request: HttpRequest) -> HttpResponse:
+    """
+    Display user's watch history.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered watch history page.
+    """
+    watched = WatchedEpisode.objects.filter(user=request.user).select_related("tv_show").order_by("-watched_at")[:50]
+
+    return render(request, "media/watch_history.html", {
+        "watched_episodes": watched,
+    })
+
+
+@login_required
+def add_manual_media_view(request: HttpRequest) -> HttpResponse:
+    """
+    Add media manually without TMDb ID.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered manual media form or redirect.
+    """
+    if request.method == "POST":
+        form = ManualMediaForm(request.POST)
+        if form.is_valid():
+            media = form.save()
+            messages.success(request, f"Dodano '{media.title}' do bazy danych!")
+
+            # If list_id is provided, add to that list
+            list_id = request.POST.get("list_id")
+            if list_id:
+                try:
+                    list_obj = List.objects.get(id=list_id, user=request.user)
+                    list_service = ListService()
+                    list_service.add_to_list(list_obj, media)
+                    messages.success(request, f"Dodano do listy '{list_obj.name}'")
+                    return redirect("lists:detail", list_id=list_id)
+                except List.DoesNotExist:
+                    pass
+
+            return redirect("media:detail", media_id=media.id)
+        else:
+            messages.error(request, "Błąd w formularzu. Sprawdź wprowadzone dane.")
+    else:
+        form = ManualMediaForm()
+
+    # Get user's lists for the dropdown
+    user_lists = List.objects.filter(user=request.user).order_by('name')
+
+    return render(request, "media/add_manual.html", {
+        "form": form,
+        "user_lists": user_lists,
+    })

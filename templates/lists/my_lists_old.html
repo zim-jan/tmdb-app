@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block title %}My Lists{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>My Lists</h1>
+        <p>Organize your movies and TV shows</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+        <h2>All Lists ({{ lists|length }})</h2>
+        <a href="{% url 'lists:create' %}" class="btn btn-primary">+ Create New List</a>
+    </div>
+
+    {% if lists %}
+        <div class="grid">
+            {% for list in lists %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3>
+                            <a href="{% url 'lists:detail' list_id=list.id %}" style="text-decoration: none; color: inherit;">
+                                {{ list.name }}
+                            </a>
+                        </h3>
+                        <p style="color: var(--text-muted); margin: 0.5rem 0;">
+                            {{ list.items.count }} item{{ list.items.count|pluralize }}
+                        </p>
+                        <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                            {% if list.is_public %}
+                                <span class="badge badge-success">Public</span>
+                            {% else %}
+                                <span class="badge">Private</span>
+                            {% endif %}
+                        </div>
+                        <div style="margin-top: 1rem; display: flex; gap: 0.5rem;">
+                            <a href="{% url 'lists:edit' list_id=list.id %}" class="btn btn-sm">Edit</a>
+                            <a href="{% url 'lists:detail' list_id=list.id %}" class="btn btn-sm btn-primary">View</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 8px;">
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't created any lists yet.</p>
+            <a href="{% url 'lists:create' %}" class="btn btn-primary">Create Your First List</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

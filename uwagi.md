@@ -1,0 +1,10 @@
+- Brak fallbacku UI do index.html dla nieznanych ścieżek (SPA-like). Dodaj catch-all w routerze: np. path('<path:any>/', index_view) w config/urls.py, z ostrożnym wykluczeniem ścieżek API.
+- Brak strony 404 po stronie UI oraz handler404. Warto dodać templates/404.html i przypisać handler404 w config/urls.py.
+- Brak ręcznego dodawania pozycji (minimum: tytuł + typ) — obecnie Media.tmdb_id jest wymagane i unikalne w media/models.py, co blokuje wpisy bez TMDb. Proponowane: zezwolić na tmdb_id=null=True, blank=True lub używać wzorca syntetycznych ID (np. ujemne wartości) oraz dodać formularz/widok do ręcznego dodawania + zapis do listy.
+- Brak pola status dla elementów list (planned/in-progress/watched). Dodać status w ListItem (choices), akcje w widokach i UI w templates/lists/list_detail.html oraz logikę w lists/services/list_service.py.
+- Wyszukiwarka TMDb (błąd/awaria): jest messages.error, ale brak ścieżki alternatywnej do dodania ręcznego z poziomu wyszukiwarki. Warto dodać CTA do formularza ręcznego, gdy TMDb niedostępne.
+- Szczegóły serialu: sekcja „Mark Episodes” w templates/media/detail.html używa filtra make_list (brak standardowo). Należy wprowadzić własny filtr/helper, albo wygenerować poprawnie listę sezonów i odcinków w kontekście. Dodatkowo, warunek dla przycisku unmark/mark opiera się na strukturze watched_episodes, która jest listą obiektów, więc aktualna logika sprawdzania „czy oglądany” w szablonie jest niepoprawna — warto użyć is_episode_watched() po stronie widoku lub przygotować zestaw (set) par (season, episode) w kontekście.
+- Dashboard po zalogowaniu (index): pokazuje statystyki i szybkie akcje, ale nie listy użytkownika — opcjonalnie dodać sekcję „ostatnie listy”.
+- Publiczne profile: logika zgodna z wymogami (read-only, przełącznik widoczności); sugerowany prosty 404 zamiast redirectu dla niewidocznych profili.
+- Fallback TMDb: dodać UI/placeholdery i ścieżkę manualnego dodawania w razie niedostępności API.
+- Admin: obecny; wymóg opcjonalny spełniony.

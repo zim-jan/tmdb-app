@@ -1,0 +1,217 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Media{% endblock %}
+
+{% block extra_css %}
+<style>
+.browse-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.filter-buttons {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 2rem;
+    flex-wrap: wrap;
+}
+
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 2rem;
+}
+
+.media-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    cursor: pointer;
+    position: relative;
+}
+
+.media-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.media-poster {
+    width: 100%;
+    height: 450px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.media-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: white;
+    font-weight: 700;
+}
+
+.media-rating {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.media-info {
+    padding: 1.5rem;
+}
+
+.media-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.media-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.media-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.media-overview {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.media-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.media-actions .btn {
+    flex: 1;
+    padding: 0.75rem;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .media-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .media-poster {
+        height: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>Browse Media</h1>
+        <p>Discover movies and TV shows in your collection</p>
+    </div>
+</div>
+
+<div class="browse-container">
+    <div class="filter-buttons">
+        <a href="{% url 'media:browse' %}" class="btn {% if media_type == 'all' %}btn-primary{% else %}btn-secondary{% endif %}">
+            🎬 All
+        </a>
+        <a href="{% url 'media:browse' %}?type=movie" class="btn {% if media_type == 'movie' %}btn-primary{% else %}btn-secondary{% endif %}">
+            🎥 Movies
+        </a>
+        <a href="{% url 'media:browse' %}?type=tv" class="btn {% if media_type == 'tv' %}btn-primary{% else %}btn-secondary{% endif %}">
+            📺 TV Shows
+        </a>
+        <a href="{% url 'media:search' %}" class="btn btn-secondary">
+            🔍 Search TMDb
+        </a>
+    </div>
+
+    {% if media_list %}
+        <div class="media-grid">
+            {% for media in media_list %}
+                <a href="{% url 'media:detail' media_id=media.id %}" class="media-card" style="text-decoration: none; color: inherit;">
+                    <div class="media-poster">
+                        {% if media.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ media.poster_path }}" alt="{{ media.title }}">
+                        {% elif media.backdrop_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ media.backdrop_path }}" alt="{{ media.title }}">
+                        {% else %}
+                            <div class="media-poster-placeholder">
+                                {{ media.title|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if media.rating %}
+                            <div class="media-rating">
+                                ⭐ {{ media.rating|floatformat:1 }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="media-info">
+                        <h3 class="media-title">{{ media.title }}</h3>
+                        
+                        <div class="media-meta">
+                            <span class="media-badge">{{ media.media_type|upper }}</span>
+                            {% if media.release_date %}
+                                <span class="media-badge" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                    📅 {{ media.release_date.year|default:media.release_date }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if media.overview %}
+                            <p class="media-overview">{{ media.overview }}</p>
+                        {% endif %}
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📽️</div>
+            <h3>No media found</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Try searching for something!</p>
+            <a href="{% url 'media:search' %}" class="btn btn-primary">Search TMDb</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

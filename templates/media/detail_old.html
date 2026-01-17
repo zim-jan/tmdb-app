@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block title %}{{ media.title }}{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>{{ media.title }}</h1>
+        <p style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <span class="badge">{{ media.get_media_type_display }}</span>
+            {% if media.release_date %}
+                <span>{{ media.release_date.year }}</span>
+            {% endif %}
+            {% if media.tmdb_rating %}
+                <span>⭐ {{ media.tmdb_rating }}/10</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 3rem;">
+    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+        <div class="card">
+            <div class="card-body">
+                <h2 style="margin-bottom: 1rem;">Overview</h2>
+                {% if media.overview %}
+                    <p>{{ media.overview }}</p>
+                {% else %}
+                    <p style="color: var(--text-muted);">No overview available.</p>
+                {% endif %}
+
+                {% if media.media_type == "MOVIE" %}
+                    <div style="margin-top: 2rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                        {% if media.movie.runtime %}
+                            <div>
+                                <strong>Runtime:</strong>
+                                <p>{{ media.movie.runtime }} minutes</p>
+                            </div>
+                        {% endif %}
+                        {% if media.movie.budget %}
+                            <div>
+                                <strong>Budget:</strong>
+                                <p>${{ media.movie.budget|floatformat:0 }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                {% elif media.media_type == "TV_SHOW" %}
+                    <div style="margin-top: 2rem;">
+                        <h3>Watch Progress</h3>
+                        {% if progress %}
+                            <p>Watched {{ progress.watched_count }} of {{ progress.total_episodes }} episodes 
+                               ({{ progress.percentage|floatformat:0 }}%)</p>
+                        {% else %}
+                            <p style="color: var(--text-muted);">No episodes watched yet</p>
+                        {% endif %}
+
+                        <h3 style="margin-top: 2rem;">Mark Episodes</h3>
+                        <div style="margin-top: 1rem;">
+                            {% for season_num in media.tvshow.number_of_seasons|make_list %}
+                                <details style="margin-bottom: 1rem; background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                                    <summary style="cursor: pointer; font-weight: 600;">Season {{ forloop.counter }}</summary>
+                                    <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
+                                        {% for ep_num in media.tvshow.number_of_episodes|make_list %}
+                                            {% with season=forloop.parentloop.counter episode=forloop.counter %}
+                                                <form method="post" 
+                                                      action="{% if watched_episodes|length and season in watched_episodes and episode in watched_episodes.season %}{% url 'media:unmark_watched' tv_show_id=media.id %}{% else %}{% url 'media:mark_watched' tv_show_id=media.id %}{% endif %}"
+                                                      style="display: inline;">
+                                                    {% csrf_token %}
+                                                    <input type="hidden" name="season" value="{{ season }}">
+                                                    <input type="hidden" name="episode" value="{{ episode }}">
+                                                    <button type="submit" class="btn btn-sm" style="width: 100%;">
+                                                        E{{ episode }}
+                                                    </button>
+                                                </form>
+                                            {% endwith %}
+                                        {% endfor %}
+                                    </div>
+                                </details>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <div>
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="card-body">
+                    <h3 style="margin-bottom: 1rem;">Add to List</h3>
+                    <form method="post" action="{% url 'media:add_to_list' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="media_id" value="{{ media.id }}">
+                        <div class="form-group">
+                            <select name="list_id" class="form-control" required>
+                                <option value="">Select a list...</option>
+                                {% for list in user_lists %}
+                                    <option value="{{ list.id }}">{{ list.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            Add to List
+                        </button>
+                    </form>
+                    <a href="{% url 'lists:create' %}" class="btn" style="width: 100%; margin-top: 0.5rem;">
+                        Create New List
+                    </a>
+                </div>
+            </div>
+
+            {% if media.tmdb_id %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-bottom: 1rem;">External Links</h3>
+                        <a href="https://www.themoviedb.org/{{ media.media_type|lower }}/{{ media.tmdb_id }}" 
+                           target="_blank" 
+                           class="btn" 
+                           style="width: 100%;">
+                            View on TMDb
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,307 @@
+{% extends "base.html" %}
+
+{% block title %}{{ list.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.list-detail-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.list-items-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 2rem;
+}
+
+.list-item-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+}
+
+.list-item-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.list-item-poster {
+    width: 100%;
+    height: 420px;
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    cursor: pointer;
+}
+
+.list-item-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.list-item-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 4rem;
+    color: white;
+    font-weight: 700;
+}
+
+.list-item-rating {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.list-item-info {
+    padding: 1.5rem;
+}
+
+.list-item-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.list-item-title a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.list-item-title a:hover {
+    color: var(--primary);
+}
+
+.list-item-meta {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.list-item-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.list-item-overview {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.list-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.list-item-actions .btn {
+    width: 100%;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+.list-item-actions form {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.list-item-actions select {
+    flex: 1;
+    padding: 0.5rem;
+    font-size: 0.85rem;
+}
+
+@media (max-width: 768px) {
+    .list-items-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .list-item-poster {
+        height: 300px;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <div style="display: flex; justify-content: space-between; align-items: start; flex-wrap: wrap; gap: 1rem;">
+            <div>
+                <h1>{{ list.name }}</h1>
+                <p style="margin: 0.5rem 0;">
+                    {% if list.is_public %}
+                        <span style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">🌐 Public</span>
+                    {% else %}
+                        <span style="background: var(--gray-200); color: var(--text-secondary); padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.85rem; font-weight: 600;">🔒 Private</span>
+                    {% endif %}
+                    <span style="margin-left: 1rem;">• {{ items|length }} item{{ items|length|pluralize }}</span>
+                </p>
+            </div>
+            <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <a href="{% url 'lists:edit' list_id=list.id %}" class="btn btn-secondary">✏️ Edit</a>
+                <a href="{% url 'media:search' %}" class="btn btn-primary">➕ Add Media</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="list-detail-container">
+    {% if items %}
+        <div class="list-items-grid">
+            {% for item_data in items %}
+                <div class="list-item-card">
+                    <a href="{% if item_data.imdb_id %}https://www.imdb.com/title/{{ item_data.imdb_id }}/{% else %}{% url 'media:detail' media_id=item_data.item.media.id %}{% endif %}" target="_blank" class="list-item-poster" style="display: block; text-decoration: none;">
+                        {% if item_data.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ item_data.poster_path }}" alt="{{ item_data.item.media.title }}">
+                        {% elif item_data.backdrop_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ item_data.backdrop_path }}" alt="{{ item_data.item.media.title }}">
+                        {% else %}
+                            <div class="list-item-poster-placeholder">
+                                {{ item_data.item.media.title|slice:":1"|upper }}
+                            </div>
+                        {% endif %}
+                        
+                        {% if item_data.rating %}
+                            <div class="list-item-rating">
+                                ⭐ {{ item_data.rating|floatformat:1 }}
+                            </div>
+                        {% endif %}
+                    </a>
+                    
+                    <div class="list-item-info">
+                        <h3 class="list-item-title">
+                            <a href="{% url 'media:detail' media_id=item_data.item.media.id %}">
+                                {{ item_data.item.media.title }}
+                            </a>
+                        </h3>
+                        
+                        <div class="list-item-meta">
+                            <span class="list-item-badge">{{ item_data.item.media.get_media_type_display }}</span>
+                            {% if item_data.item.media.release_date %}
+                                <span class="list-item-badge" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                    📅 {{ item_data.item.media.release_date.year }}
+                                </span>
+                            {% endif %}
+                            {% if item_data.item.status == 'PLANNED' %}
+                                <span class="list-item-badge" style="background: linear-gradient(135deg, #a8c0ff 0%, #3f2b96 100%);">
+                                    📋 Planned
+                                </span>
+                            {% elif item_data.item.status == 'IN_PROGRESS' %}
+                                <span class="list-item-badge" style="background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);">
+                                    ▶️ In Progress
+                                </span>
+                            {% elif item_data.item.status == 'WATCHED' %}
+                                <span class="list-item-badge" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                    ✓ Watched
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if item_data.item.media.overview %}
+                            <p class="list-item-overview">{{ item_data.item.media.overview }}</p>
+                        {% endif %}
+                        
+                        <div class="list-item-actions">
+                            <div style="margin-bottom: 0.5rem;">
+                                <select class="form-control" onchange="updateStatus({{ item_data.item.id }}, this.value)" style="width: 100%; margin-bottom: 0.5rem;">
+                                    <option value="PLANNED" {% if item_data.item.status == 'PLANNED' %}selected{% endif %}>📋 Planned</option>
+                                    <option value="IN_PROGRESS" {% if item_data.item.status == 'IN_PROGRESS' %}selected{% endif %}>▶️ In Progress</option>
+                                    <option value="WATCHED" {% if item_data.item.status == 'WATCHED' %}selected{% endif %}>✓ Watched</option>
+                                </select>
+                            </div>
+                            
+                            <a href="{% url 'media:detail' media_id=item_data.item.media.id %}" class="btn btn-primary">
+                                👁️ View Details
+                            </a>
+                            
+                            {% if user_lists|length > 1 %}
+                                <form method="post" action="{% url 'lists:move_item' item_id=item_data.item.id %}">
+                                    {% csrf_token %}
+                                    <select name="target_list_id" class="form-control">
+                                        <option value="">Move to...</option>
+                                        {% for other_list in user_lists %}
+                                            {% if other_list.id != list.id %}
+                                                <option value="{{ other_list.id }}">{{ other_list.name }}</option>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn btn-secondary">🔄 Move</button>
+                                </form>
+                            {% endif %}
+                            
+                            <form method="post" action="{% url 'lists:remove_item' list_id=list.id media_id=item_data.item.media.id %}">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-secondary" style="width: 100%;" onclick="return confirm('Remove {{ item_data.item.media.title }} from this list?')">
+                                    🗑️ Remove
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+            <div style="font-size: 4rem; margin-bottom: 1rem;">📽️</div>
+            <h3>This list is empty</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Start adding movies and TV shows!</p>
+            <a href="{% url 'media:search' %}" class="btn btn-primary">Search for Movies & TV Shows</a>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function updateStatus(itemId, status) {
+    fetch(`/lists/item/${itemId}/status/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: `status=${status}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Optionally show a notification
+            console.log('Status updated successfully');
+        }
+    })
+    .catch(error => {
+        console.error('Error updating status:', error);
+    });
+}
+</script>
+{% endblock %}

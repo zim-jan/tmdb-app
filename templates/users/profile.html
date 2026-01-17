@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Profile - TMDb App{% endblock %}
+
+{% block content %}
+<div class="profile-container">
+    <div class="container">
+        <div class="profile-header">
+            <div class="profile-avatar-large">
+                {{ user.username|first|upper }}
+            </div>
+            <div class="profile-info">
+                <h1 class="profile-name">{{ user.username }}</h1>
+                <p class="profile-nickname">@{{ user.nickname }}</p>
+                <p class="profile-email">{{ user.email }}</p>
+            </div>
+        </div>
+        
+        <div class="profile-stats">
+            <div class="stat-item">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Lists Created</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Movies Tracked</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">0</div>
+                <div class="stat-label">Episodes Watched</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-value">{{ user.date_joined|date:"M Y" }}</div>
+                <div class="stat-label">Member Since</div>
+            </div>
+        </div>
+        
+        <div class="profile-actions">
+            <a href="{% url 'profiles:edit' %}" class="btn btn-primary">Edit Profile</a>
+            <a href="{% url 'profiles:public' nickname=user.nickname %}" class="btn btn-secondary">View Public Profile</a>
+        </div>
+        
+        <div class="profile-sections">
+            <div class="section-tabs">
+                <button class="tab-button active">My Lists</button>
+                <button class="tab-button">Watch History</button>
+                <button class="tab-button">Public Profile</button>
+            </div>
+            
+            <div class="section-content">
+                <div class="empty-state">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+                        <rect x="12" y="16" width="40" height="32" rx="4" stroke="currentColor" stroke-width="3"/>
+                        <path d="M12 26H52" stroke="currentColor" stroke-width="3"/>
+                        <circle cx="22" cy="34" r="2" fill="currentColor"/>
+                        <circle cx="32" cy="34" r="2" fill="currentColor"/>
+                        <circle cx="42" cy="34" r="2" fill="currentColor"/>
+                    </svg>
+                    <h3>No lists yet</h3>
+                    <p>Create your first list to start tracking movies and TV shows</p>
+                    <a href="#" class="btn btn-primary">Create List</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

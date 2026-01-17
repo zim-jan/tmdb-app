@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}My Lists{% endblock %}
+
+{% block extra_css %}
+<style>
+.lists-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.lists-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.lists-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+.list-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s;
+    border: 2px solid transparent;
+}
+
+.list-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary);
+}
+
+.list-card-header {
+    margin-bottom: 1.5rem;
+}
+
+.list-card-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem 0;
+    color: var(--text-primary);
+}
+
+.list-card-title a {
+    text-decoration: none;
+    color: inherit;
+    transition: color 0.2s;
+}
+
+.list-card-title a:hover {
+    color: var(--primary);
+}
+
+.list-card-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.list-card-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-weight: 600;
+}
+
+.list-card-badges {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.list-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.list-badge-public {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: white;
+}
+
+.list-badge-private {
+    background: var(--gray-200);
+    color: var(--text-secondary);
+}
+
+.list-card-actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.list-card-actions .btn {
+    flex: 1;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 4rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.empty-state-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .lists-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .lists-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>My Lists</h1>
+        <p>Organize your movies and TV shows</p>
+    </div>
+</div>
+
+<div class="lists-container">
+    <div class="lists-header">
+        <h2>All Lists ({{ lists|length }})</h2>
+        <a href="{% url 'lists:create' %}" class="btn btn-primary">+ Create New List</a>
+    </div>
+
+    {% if lists %}
+        <div class="lists-grid">
+            {% for list in lists %}
+                <div class="list-card">
+                    <div class="list-card-header">
+                        <h3 class="list-card-title">
+                            <a href="{% url 'lists:detail' list_id=list.id %}">
+                                {{ list.name }}
+                            </a>
+                        </h3>
+                        <div class="list-card-meta">
+                            <span class="list-card-count">
+                                📋 {{ list.items.count }} item{{ list.items.count|pluralize }}
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="list-card-badges">
+                        {% if list.is_public %}
+                            <span class="list-badge list-badge-public">🌐 Public</span>
+                        {% else %}
+                            <span class="list-badge list-badge-private">🔒 Private</span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="list-card-actions">
+                        <a href="{% url 'lists:edit' list_id=list.id %}" class="btn btn-secondary">✏️ Edit</a>
+                        <a href="{% url 'lists:detail' list_id=list.id %}" class="btn btn-primary">👁️ View</a>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📝</div>
+            <h3>No Lists Yet</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">You haven't created any lists yet.</p>
+            <a href="{% url 'lists:create' %}" class="btn btn-primary">Create Your First List</a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

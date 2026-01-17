@@ -1,0 +1,398 @@
+{% extends "base.html" %}
+{% load media_tags episode_tags %}
+
+{% block title %}{{ media.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.media-detail-header {
+    position: relative;
+    height: 700px;
+    overflow: hidden;
+    margin-bottom: -100px;
+}
+
+.media-backdrop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.4);
+}
+
+.media-header-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 4rem 0 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.7) 50%, transparent 100%);
+}
+
+.media-header-grid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.media-poster-large {
+    width: 300px;
+    height: 450px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.media-poster-large img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.media-poster-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 6rem;
+    color: white;
+    font-weight: 700;
+}
+
+.media-header-info {
+    color: white;
+    text-align: center;
+}
+
+.media-title-large {
+    font-size: 3rem;
+    font-weight: 800;
+    margin: 0 0 1rem 0;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.media-meta-large {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+}
+
+.media-meta-badge {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 600;
+}
+
+.media-detail-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    padding-top: 120px;
+}
+
+.content-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+}
+
+@media (max-width: 1200px) {
+    .media-poster-large {
+        width: 250px;
+        height: 375px;
+    }
+    
+    .media-title-large {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .media-poster-large {
+        width: 200px;
+        height: 300px;
+    }
+    
+    .media-title-large {
+        font-size: 2rem;
+    }
+    
+    .content-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% if tmdb_data %}
+<div class="media-detail-header">
+    {% if tmdb_data.backdrop_path %}
+        <img src="https://image.tmdb.org/t/p/original{{ tmdb_data.backdrop_path }}" class="media-backdrop" alt="{{ media.title }}">
+    {% elif tmdb_data.poster_path %}
+        <img src="https://image.tmdb.org/t/p/original{{ tmdb_data.poster_path }}" class="media-backdrop" alt="{{ media.title }}">
+    {% endif %}
+    
+    <div class="media-header-content">
+        <div class="container">
+            <div class="media-header-grid">
+                <div class="media-poster-large">
+                    {% if tmdb_data.poster_path %}
+                        <img src="https://image.tmdb.org/t/p/w500{{ tmdb_data.poster_path }}" alt="{{ media.title }}">
+                    {% else %}
+                        <div class="media-poster-placeholder">
+                            {{ media.title|slice:":1"|upper }}
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="media-header-info">
+                    <h1 class="media-title-large">{{ media.title }}</h1>
+                    <div class="media-meta-large">
+                        <span class="media-meta-badge">{{ media.get_media_type_display }}</span>
+                        {% if media.release_date %}
+                            <span>📅 {{ media.release_date.year }}</span>
+                        {% endif %}
+                        {% if tmdb_data.vote_average %}
+                            <span>⭐ {{ tmdb_data.vote_average|floatformat:1 }}/10</span>
+                        {% endif %}
+                        {% if tmdb_data.runtime %}
+                            <span>⏱️ {{ tmdb_data.runtime }} min</span>
+                        {% endif %}
+                        {% if tmdb_data.number_of_seasons %}
+                            <span>📺 {{ tmdb_data.number_of_seasons }} Season{{ tmdb_data.number_of_seasons|pluralize }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% else %}
+<div class="hero">
+    <div class="container">
+        <h1>{{ media.title }}</h1>
+        <p style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: center;">
+            <span class="badge">{{ media.get_media_type_display }}</span>
+            {% if media.release_date %}
+                <span>{{ media.release_date.year }}</span>
+            {% endif %}
+            {% if media.tmdb_rating %}
+                <span>⭐ {{ media.tmdb_rating }}/10</span>
+            {% endif %}
+        </p>
+    </div>
+</div>
+{% endif %}
+
+<div class="media-detail-content">
+    <div class="content-grid">
+        <div>
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 1rem;">Overview</h2>
+                    {% if media.overview or tmdb_data.overview %}
+                        <p style="line-height: 1.8; font-size: 1.05rem;">{{ tmdb_data.overview|default:media.overview }}</p>
+                    {% else %}
+                        <p style="color: var(--text-muted);">No overview available.</p>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if tmdb_data %}
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 1rem;">Details</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1.5rem;">
+                        {% if tmdb_data.genres %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Genres</strong>
+                                <p style="margin-top: 0.25rem;">{% for genre in tmdb_data.genres %}{{ genre.name }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if directors %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Director{{ directors|length|pluralize }}</strong>
+                                <p style="margin-top: 0.25rem;">{{ directors|join:", " }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if tmdb_data.production_companies %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Production</strong>
+                                <p style="margin-top: 0.25rem;">{{ tmdb_data.production_companies.0.name }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if tmdb_data.original_language %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Language</strong>
+                                <p style="margin-top: 0.25rem;">{{ tmdb_data.original_language|upper }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if tmdb_data.status %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Status</strong>
+                                <p style="margin-top: 0.25rem;">{{ tmdb_data.status }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if tmdb_data.budget and tmdb_data.budget > 0 %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Budget</strong>
+                                <p style="margin-top: 0.25rem;">${{ tmdb_data.budget|floatformat:0 }}</p>
+                            </div>
+                        {% endif %}
+                        
+                        {% if tmdb_data.revenue and tmdb_data.revenue > 0 %}
+                            <div>
+                                <strong style="color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase;">Revenue</strong>
+                                <p style="margin-top: 0.25rem;">${{ tmdb_data.revenue|floatformat:0 }}</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            
+            {% if cast %}
+            <div class="card" style="margin-bottom: 2rem;">
+                <div class="card-body">
+                    <h2 style="margin-bottom: 1rem;">Cast</h2>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 1.5rem;">
+                        {% for person in cast %}
+                            <div style="text-align: center;">
+                                <div style="width: 120px; height: 120px; border-radius: 50%; overflow: hidden; margin: 0 auto 0.75rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: white; font-weight: 700;">
+                                    {% if person.profile_path %}
+                                        <img src="https://image.tmdb.org/t/p/w200{{ person.profile_path }}" style="width: 100%; height: 100%; object-fit: cover;" alt="{{ person.name }}">
+                                    {% else %}
+                                        {{ person.name|slice:":1"|upper }}
+                                    {% endif %}
+                                </div>
+                                <div style="font-weight: 600; margin-bottom: 0.25rem;">{{ person.name }}</div>
+                                <div style="font-size: 0.9rem; color: var(--text-muted);">{{ person.character }}</div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% endif %}
+
+            {% if media.media_type == "TV_SHOW" %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-bottom: 1rem;">Watch Progress</h3>
+                        {% if progress %}
+                            <p style="font-size: 1.05rem;">Watched {{ progress.watched_count }} of {{ progress.total_episodes }} episodes 
+                               ({{ progress.percentage|floatformat:0 }}%)</p>
+                            <div style="background: var(--gray-200); height: 8px; border-radius: 4px; margin-top: 1rem; overflow: hidden;">
+                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: {{ progress.percentage }}%;"></div>
+                            </div>
+                        {% else %}
+                            <p style="color: var(--text-muted);">No episodes watched yet</p>
+                        {% endif %}
+
+                        <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Mark Episodes</h3>
+                        <div style="margin-top: 1rem;">
+                            {% if media.tvshow.number_of_seasons %}
+                                {% for season_num in media.tvshow.number_of_seasons|range %}
+                                    <details style="margin-bottom: 1rem; background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                                        <summary style="cursor: pointer; font-weight: 600;">Season {{ season_num }}</summary>
+                                        <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
+                                            {% comment %}Note: Using a fixed number of episodes per season (20) as a fallback{% endcomment %}
+                                            {% for ep_num in 20|range %}
+                                                {% if watched_episodes_set|is_watched:season_num|add:","|add:ep_num %}
+                                                    {% comment %}Episode is watched{% endcomment %}
+                                                    <form method="post" 
+                                                          action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
+                                                          style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="season" value="{{ season_num }}">
+                                                        <input type="hidden" name="episode" value="{{ ep_num }}">
+                                                        <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">
+                                                            ✓ E{{ ep_num }}
+                                                        </button>
+                                                    </form>
+                                                {% else %}
+                                                    {% comment %}Episode not watched{% endcomment %}
+                                                    <form method="post" 
+                                                          action="{% url 'media:mark_watched' tv_show_id=media.id %}"
+                                                          style="display: inline;">
+                                                        {% csrf_token %}
+                                                        <input type="hidden" name="season" value="{{ season_num }}">
+                                                        <input type="hidden" name="episode" value="{{ ep_num }}">
+                                                        <button type="submit" class="btn btn-sm" style="width: 100%;">
+                                                            E{{ ep_num }}
+                                                        </button>
+                                                    </form>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    </details>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="card-body">
+                    <h3 style="margin-bottom: 1rem;">Add to List</h3>
+                    <form method="post" action="{% url 'media:add_to_list' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="media_id" value="{{ media.id }}">
+                        <div class="form-group" style="margin-bottom: 1rem;">
+                            <select name="list_id" class="form-control" required>
+                                <option value="">Select a list...</option>
+                                {% for list in user_lists %}
+                                    <option value="{{ list.id }}">{{ list.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="width: 100%;">
+                            ➕ Add to List
+                        </button>
+                    </form>
+                    <a href="{% url 'lists:create' %}" class="btn btn-secondary" style="width: 100%; margin-top: 0.5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+                        📝 Create New List
+                    </a>
+                </div>
+            </div>
+
+            {% if media.tmdb_id %}
+                <div class="card">
+                    <div class="card-body">
+                        <h3 style="margin-bottom: 1rem;">External Links</h3>
+                        <a href="https://www.themoviedb.org/{{ media.media_type|lower }}/{{ media.tmdb_id }}" 
+                           target="_blank" 
+                           class="btn btn-secondary" 
+                           style="width: 100%; margin-bottom: 0.5rem; background: linear-gradient(135deg, #01b4e4 0%, #0d90c6 100%); color: white; border: none;">
+                            🎥 View on TMDb
+                        </a>
+                        {% if tmdb_data.imdb_id %}
+                            <a href="https://www.imdb.com/title/{{ tmdb_data.imdb_id }}/" 
+                               target="_blank" 
+                               class="btn btn-secondary" 
+                               style="width: 100%; background: linear-gradient(135deg, #f5c518 0%, #e6b800 100%); color: #000;">
+                                🎬 View on IMDb
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

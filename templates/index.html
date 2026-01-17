@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+
+{% block title %}Home - TMDb App{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="container">
+        {% if user.is_authenticated %}
+        <div class="hero-content">
+            <h1 class="hero-title">Welcome back, {{ user.username }}!</h1>
+            <p class="hero-subtitle">Track your favorite movies and TV shows</p>
+            <div class="hero-actions">
+                <a href="{% url 'media:browse' %}" class="btn btn-primary">Browse Movies</a>
+                <a href="{% url 'lists:my_lists' %}" class="btn btn-secondary">My Lists</a>
+            </div>
+        </div>
+        
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="6" width="24" height="20" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 12H28" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="10" cy="18" r="1" fill="currentColor"/>
+                        <circle cx="16" cy="18" r="1" fill="currentColor"/>
+                        <circle cx="22" cy="18" r="1" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_lists|default:"0" }}</div>
+                    <div class="stat-label">Lists</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="6" y="4" width="20" height="24" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M12 12H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 16H20" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 20H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_items|default:"0" }}</div>
+                    <div class="stat-label">Movies Tracked</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <rect x="4" y="8" width="24" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                        <path d="M4 14H28" stroke="currentColor" stroke-width="2"/>
+                        <circle cx="12" cy="18" r="1.5" fill="currentColor"/>
+                        <circle cx="20" cy="18" r="1.5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-value">{{ total_watched|default:"0" }}</div>
+                    <div class="stat-label">Episodes Watched</div>
+                </div>
+            </div>
+        </div>
+        
+        {% if recent_lists %}
+        <div style="margin-top: 3rem;">
+            <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary);">Recent Lists</h2>
+            <div style="display: grid; gap: 1rem;">
+                {% for list in recent_lists %}
+                <a href="{% url 'lists:detail' list_id=list.id %}" style="text-decoration: none;">
+                    <div class="card" style="padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s;">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div>
+                                <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">{{ list.name }}</h3>
+                                <p style="color: var(--text-muted); font-size: 0.875rem;">
+                                    {{ list.items.count }} item{{ list.items.count|pluralize }} · Updated {{ list.updated_at|timesince }} ago
+                                </p>
+                            </div>
+                            <span style="padding: 0.25rem 0.75rem; background: var(--bg-secondary); border-radius: 12px; font-size: 0.85rem; color: var(--text-muted);">
+                                {% if list.is_public %}🌐 Public{% else %}🔒 Private{% endif %}
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            </div>
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="{% url 'lists:my_lists' %}" class="btn btn-secondary">View All Lists</a>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% else %}
+        <div class="hero-content centered">
+            <h1 class="hero-title">Track Your Movie Journey</h1>
+            <p class="hero-subtitle">Create lists, track episodes, and share your progress with friends</p>
+            <div class="hero-actions">
+                <a href="{% url 'users:register' %}" class="btn btn-primary">Get Started</a>
+                <a href="{% url 'users:login' %}" class="btn btn-secondary">Sign In</a>
+            </div>
+        </div>
+        
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <rect x="8" y="12" width="32" height="24" rx="3" stroke="currentColor" stroke-width="2.5"/>
+                        <path d="M8 20H40" stroke="currentColor" stroke-width="2.5"/>
+                        <circle cx="16" cy="26" r="1.5" fill="currentColor"/>
+                        <circle cx="24" cy="26" r="1.5" fill="currentColor"/>
+                        <circle cx="32" cy="26" r="1.5" fill="currentColor"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Create Lists</h3>
+                <p class="feature-description">Organize your movies and TV shows into custom lists</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="24" cy="24" r="16" stroke="currentColor" stroke-width="2.5"/>
+                        <path d="M24 12V24L32 28" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Track Progress</h3>
+                <p class="feature-description">Mark episodes as watched and see your progress</p>
+            </div>
+            
+            <div class="feature-card">
+                <div class="feature-icon">
+                    <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+                        <circle cx="16" cy="16" r="8" stroke="currentColor" stroke-width="2.5"/>
+                        <circle cx="32" cy="24" r="8" stroke="currentColor" stroke-width="2.5"/>
+                        <path d="M22 20L28 24" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <h3 class="feature-title">Share Profile</h3>
+                <p class="feature-description">Share your watching activity with friends</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

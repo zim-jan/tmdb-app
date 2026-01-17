@@ -1,0 +1,687 @@
+{% extends "base.html" %}
+
+{% block title %}Search Media{% endblock %}
+
+{% block extra_css %}
+<style>
+.search-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+.search-form {
+    background: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.search-inputs {
+    display: grid;
+    grid-template-columns: 1fr auto auto auto;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.sort-options {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.sort-label {
+    font-weight: 600;
+    color: var(--text-muted);
+}
+
+.result-item {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.result-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.result-poster {
+    width: 200px;
+    height: 300px;
+    object-fit: cover;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 3rem;
+}
+
+.result-poster img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.result-content {
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    margin-bottom: 1rem;
+}
+
+.result-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-primary);
+}
+
+.result-meta {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.meta-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.meta-badge.type-badge {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.meta-badge.date-badge {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+}
+
+.rating-badge {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.result-overview {
+    color: var(--text-muted);
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    flex-grow: 1;
+}
+
+.result-details {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.detail-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.detail-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.detail-value {
+    color: var(--text-primary);
+    font-size: 0.9rem;
+}
+
+.result-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.add-to-list-container {
+    position: relative;
+    flex-grow: 1;
+}
+
+.add-button {
+    width: 100%;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.add-button:hover {
+    background: linear-gradient(135deg, #4f46e5 0%, #5b3a86 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.list-dropdown {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    right: 0;
+    margin-bottom: 0.5rem;
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 100;
+}
+
+.list-dropdown.show {
+    display: block;
+    animation: slideUp 0.2s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.list-option {
+    padding: 0.75rem 1rem;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    text-align: left;
+    background: none;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+}
+
+.list-option:last-child {
+    border-bottom: none;
+}
+
+.list-option:hover {
+    background: var(--bg-secondary);
+}
+
+.list-option-name {
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.list-option-count {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
+.no-results {
+    text-align: center;
+    padding: 4rem 2rem;
+    background: var(--bg-secondary);
+    border-radius: 12px;
+}
+
+.no-results-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 900px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.modal-close:hover {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+}
+
+.modal-header {
+    position: relative;
+    height: 400px;
+    overflow: hidden;
+}
+
+.modal-backdrop {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    filter: brightness(0.7);
+}
+
+.modal-header-content {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 2rem;
+    background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+    color: white;
+}
+
+.modal-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.modal-body {
+    padding: 2rem;
+}
+
+.modal-section {
+    margin-bottom: 2rem;
+}
+
+.modal-section-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+}
+
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.modal-info-item {
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border-radius: 8px;
+}
+
+.modal-info-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+}
+
+.modal-info-value {
+    font-size: 1rem;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.cast-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 1rem;
+}
+
+.cast-item {
+    text-align: center;
+}
+
+.cast-photo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin: 0 auto 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+.cast-name {
+    font-weight: 600;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+}
+
+.cast-character {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.external-links {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.external-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.external-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.external-link.imdb {
+    background: linear-gradient(135deg, #f5c518 0%, #e6b800 100%);
+    color: #000;
+}
+
+@media (max-width: 768px) {
+    .result-item {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-poster {
+        width: 100%;
+        height: 200px;
+    }
+    
+    .search-inputs {
+        grid-template-columns: 1fr;
+    }
+    
+    .result-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+        margin: 0;
+        border-radius: 0;
+        max-height: 100vh;
+    }
+    
+    .modal-title {
+        font-size: 1.75rem;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>Search TMDb</h1>
+        <p>Find movies and TV shows with detailed information</p>
+    </div>
+</div>
+
+<div class="search-container">
+    <form method="get" class="search-form">
+        <div class="search-inputs">
+            <input 
+                type="text" 
+                name="q" 
+                class="form-control" 
+                placeholder="Search for movies and TV shows..." 
+                value="{{ query }}"
+                required
+            >
+            <select name="type" class="form-control">
+                <option value="">All Types</option>
+                <option value="movie" {% if media_type == "movie" %}selected{% endif %}>Movies</option>
+                <option value="tv" {% if media_type == "tv" %}selected{% endif %}>TV Shows</option>
+            </select>
+            <select name="sort" class="form-control">
+                <option value="relevance" {% if sort_by == "relevance" %}selected{% endif %}>Relevance</option>
+                <option value="title" {% if sort_by == "title" %}selected{% endif %}>Title (A-Z)</option>
+                <option value="rating" {% if sort_by == "rating" %}selected{% endif %}>Rating</option>
+                <option value="date" {% if sort_by == "date" %}selected{% endif %}>Release Date</option>
+            </select>
+            <button type="submit" class="btn btn-primary">
+                🔍 Search
+            </button>
+        </div>
+    </form>
+
+    {% if query %}
+        {% if results %}
+            <div style="margin-bottom: 1.5rem;">
+                <h2 style="margin: 0;">{{ results|length }} result{{ results|length|pluralize }} for "{{ query }}"</h2>
+            </div>
+            
+            {% for result in results %}
+                <div class="result-item">
+                    <a href="https://www.themoviedb.org/{{ result.media_type }}/{{ result.id }}/" target="_blank" class="result-poster" style="text-decoration: none; color: inherit;">
+                        {% if result.poster_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ result.poster_path }}" alt="{{ result.title }}">
+                        {% elif result.backdrop_path %}
+                            <img src="https://image.tmdb.org/t/p/w500{{ result.backdrop_path }}" alt="{{ result.title }}">
+                        {% else %}
+                            {{ result.title|slice:":1"|upper }}
+                        {% endif %}
+                    </a>
+                    
+                    <div class="result-content">
+                        <div class="result-header">
+                            <h3 class="result-title">{{ result.title }}</h3>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <span class="meta-badge type-badge">
+                                {{ result.media_type|upper }}
+                            </span>
+                            {% if result.rating %}
+                                <span class="meta-badge rating-badge">
+                                    ⭐ {{ result.rating|floatformat:1 }}/10
+                                </span>
+                            {% endif %}
+                            {% if result.release_date %}
+                                <span class="meta-badge date-badge">
+                                    📅 {{ result.release_date }}
+                                </span>
+                            {% elif result.first_air_date %}
+                                <span class="meta-badge date-badge">
+                                    📅 {{ result.first_air_date }}
+                                </span>
+                            {% endif %}
+                        </div>
+                        
+                        {% if result.overview %}
+                            <p class="result-overview">{{ result.overview|truncatewords:40 }}</p>
+                        {% endif %}
+                        
+                        <div class="result-details">
+                            {% if result.directors %}
+                                <div class="detail-item">
+                                    <span class="detail-label">Director{{ result.directors|length|pluralize }}</span>
+                                    <span class="detail-value">{{ result.directors|join:", " }}</span>
+                                </div>
+                            {% endif %}
+                            {% if result.cast %}
+                                <div class="detail-item">
+                                    <span class="detail-label">Cast</span>
+                                    <span class="detail-value">{{ result.cast|slice:":3"|join:", " }}</span>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="result-actions">
+                            <div class="add-to-list-container">
+                                <button type="button" class="add-button" onclick="toggleListDropdown(this)">
+                                    ➕ Add to List
+                                </button>
+                                <div class="list-dropdown">
+                                    {% for list in user_lists %}
+                                        <form method="post" action="{% url 'media:add_to_list' %}" style="margin: 0;">
+                                            {% csrf_token %}
+                                            <input type="hidden" name="tmdb_id" value="{{ result.id }}">
+                                            <input type="hidden" name="media_type" value="{{ result.media_type }}">
+                                            <input type="hidden" name="list_id" value="{{ list.id }}">
+                                            <button type="submit" class="list-option">
+                                                <div class="list-option-name">{{ list.name }}</div>
+                                                <div class="list-option-count">{{ list.items.count }} item{{ list.items.count|pluralize }}</div>
+                                            </button>
+                                        </form>
+                                    {% empty %}
+                                        <div style="padding: 1rem; text-align: center; color: var(--text-muted);">
+                                            No lists yet. <a href="{% url 'lists:create' %}" style="color: var(--primary-color);">Create one!</a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        {% else %}
+            <div class="no-results">
+                <div class="no-results-icon">🔍</div>
+                <h3>No results found for "{{ query }}"</h3>
+                <p style="color: var(--text-muted);">Try different keywords or check your spelling</p>
+                <div style="margin-top: 2rem;">
+                    <a href="{% url 'media:add_manual' %}" class="btn btn-primary">
+                        Dodaj film/serial ręcznie
+                    </a>
+                </div>
+            </div>
+        {% endif %}
+    {% else %}
+        <div class="no-results">
+            <div class="no-results-icon">🎬</div>
+            <h3>Start searching for movies and TV shows</h3>
+            <p style="color: var(--text-muted);">Enter a title in the search box above</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+function toggleListDropdown(button) {
+    event.stopPropagation(); // Prevent modal from opening
+    const container = button.closest('.add-to-list-container');
+    const dropdown = container.querySelector('.list-dropdown');
+    
+    // Close all other dropdowns
+    document.querySelectorAll('.list-dropdown.show').forEach(d => {
+        if (d !== dropdown) {
+            d.classList.remove('show');
+        }
+    });
+    
+    dropdown.classList.toggle('show');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.add-to-list-container')) {
+        document.querySelectorAll('.list-dropdown.show').forEach(d => {
+            d.classList.remove('show');
+        });
+    }
+});
+
+// Prevent form submission from propagating
+document.querySelectorAll('.list-option').forEach(button => {
+    button.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+});
+</script>
+{% endblock %}

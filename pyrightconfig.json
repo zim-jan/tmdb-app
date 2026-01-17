@@ -1,0 +1,38 @@
+{
+  "include": [
+    "users",
+    "lists",
+    "media",
+    "profiles",
+    "core",
+    "config"
+  ],
+  "exclude": [
+    "**/__pycache__",
+    "**/migrations",
+    ".venv",
+    "staticfiles",
+    "*.pyc"
+  ],
+  "strict": [
+    "users",
+    "lists",
+    "media",
+    "profiles",
+    "core"
+  ],
+  "pythonVersion": "3.12",
+  "pythonPlatform": "Linux",
+  "typeCheckingMode": "standard",
+  "reportMissingTypeStubs": false,
+  "reportUnknownMemberType": false,
+  "reportUnknownArgumentType": false,
+  "reportUnknownVariableType": false,
+  "reportMissingImports": true,
+  "reportUndefinedVariable": true,
+  "reportGeneralTypeIssues": true,
+  "reportOptionalMemberAccess": true,
+  "reportOptionalSubscript": true,
+  "reportPrivateImportUsage": true,
+  "useLibraryCodeForTypes": true,
+}

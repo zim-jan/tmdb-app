@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TMDb App{% endblock %}</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <header class="main-header">
+        <div class="container">
+            <nav class="nav-container">
+                <div class="logo">
+                    <a href="{% url 'index' %}">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="40" height="40" rx="8" fill="#6366f1"/>
+                            <path d="M10 12H14V28H10V12Z" fill="white"/>
+                            <path d="M16 12H20L24 22L28 12H32V28H28V18L24 28L20 18V28H16V12Z" fill="white"/>
+                        </svg>
+                        <span>TMDb App</span>
+                    </a>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li><a href="{% url 'index' %}" class="nav-link {% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
+                    <li><a href="{% url 'lists:my_lists' %}" class="nav-link">My Lists</a></li>
+                    <li><a href="{% url 'media:browse' %}" class="nav-link">Browse</a></li>
+                    <li><a href="{% url 'media:search' %}" class="nav-link">Search</a></li>
+                </ul>
+                
+                <div class="nav-user">
+                    <div class="user-menu">
+                        <button class="user-button" id="userMenuButton">
+                            <div class="user-avatar">{{ user.username|first|upper }}</div>
+                            <span>{{ user.username }}</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </button>
+                        <div class="user-dropdown" id="userDropdown">
+                            <a href="{% url 'users:profile' %}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="5" r="3" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M2 14C2 11.7909 4.68629 10 8 10C11.3137 10 14 11.7909 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Profile
+                            </a>
+                            <a href="{% url 'media:watch_history' %}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M8 2V8L11 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+                                </svg>
+                                Watch History
+                            </a>
+                            <a href="{% url 'profiles:edit' %}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.5"/>
+                                    <path d="M10.5 6L8 8.5L6.5 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                                Settings
+                            </a>
+                            <div class="dropdown-divider"></div>
+                            <a href="{% url 'users:logout' %}" class="dropdown-item">
+                                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                    <path d="M6 14H3C2.44772 14 2 13.5523 2 13V3C2 2.44772 2.44772 2 3 2H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                    <path d="M11 11L14 8L11 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                    <path d="M14 8H6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                                </svg>
+                                Logout
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </div>
+    </header>
+    {% endif %}
+
+    {% if messages %}
+    <div class="messages-container">
+        {% for message in messages %}
+        <div class="message message-{{ message.tags }}">
+            <div class="message-content">
+                <span>{{ message }}</span>
+                <button class="message-close" onclick="this.parentElement.parentElement.remove()">
+                    <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 4L12 12M12 4L4 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <main class="main-content {% if not user.is_authenticated %}no-header{% endif %}">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="main-footer">
+        <div class="container">
+            <p>&copy; 2026 JKA-TMDb App.</p>
+        </div>
+    </footer>
+
+    <script>
+        // User menu dropdown
+        const userButton = document.getElementById('userMenuButton');
+        const userDropdown = document.getElementById('userDropdown');
+        
+        if (userButton && userDropdown) {
+            userButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                userDropdown.classList.toggle('show');
+            });
+            
+            document.addEventListener('click', () => {
+                userDropdown.classList.remove('show');
+            });
+        }
+        
+        // Auto-hide messages after 5 seconds
+        setTimeout(() => {
+            const messages = document.querySelectorAll('.message');
+            messages.forEach(msg => {
+                msg.style.animation = 'slideOut 0.3s ease-out';
+                setTimeout(() => msg.remove(), 300);
+            });
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
