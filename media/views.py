@@ -260,14 +260,17 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
     progress = None
     tv_show = None
     if media.media_type == "TV_SHOW":
+        # For multi-table inheritance: use the reverse relation
+        # media.tvshow accesses the child model via OneToOne relation
         try:
-            tv_show = TVShow.objects.get(id=media_id)
+            tv_show = media.tvshow  # Clean reverse relation access
         except TVShow.DoesNotExist:
-            # In case media_id refers to the parent Media of a TVShow
-            try:
-                tv_show = media.tvshow
-            except TVShow.DoesNotExist:
-                pass
+            # TVShow should exist if media_type is TV_SHOW
+            logger.warning(
+                "TVShow not found for media_id=%s despite media_type=TV_SHOW",
+                media_id,
+                extra={'media_id': media_id}
+            )
         
         if tv_show:
             tracking_service = EpisodeTrackingService()

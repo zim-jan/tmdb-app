@@ -152,8 +152,54 @@ class Media(models.Model):
         """
         return self.title
 
+    @property
+    def is_movie(self) -> bool:
+        """
+        Check if this media is a movie.
 
-class Movie(Media):
+        Returns
+        -------
+        bool
+            True if media type is MOVIE.
+        """
+        return self.media_type == MediaType.MOVIE
+
+    @property
+    def is_tv_show(self) -> bool:
+        """
+        Check if this media is a TV show.
+
+        Returns
+        -------
+        bool
+            True if media type is TV_SHOW.
+        """
+        return self.media_type == MediaType.TV_SHOW
+
+    def get_concrete_instance(self) -> 'Media':
+        """
+        Get the concrete child instance (Movie or TVShow).
+
+        Handles multi-table inheritance by returning the actual
+        child model instance instead of the parent Media instance.
+
+        Returns
+        -------
+        Media
+            The concrete instance (Movie or TVShow) if it exists,
+            otherwise returns self (parent Media instance).
+        """
+        if self.is_movie:
+            try:
+                return self.movie
+            except Movie.DoesNotExist:
+                return self
+        elif self.is_tv_show:
+            try:
+                return self.tvshow
+            except Movie.DoesNotExist:
+                return self
+        return self
     """
     Movie model extending Media base class.
 
