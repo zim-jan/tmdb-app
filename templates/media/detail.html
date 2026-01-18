@@ -302,15 +302,30 @@ details.episode-season[open] summary {
             {% if media.media_type == "TV_SHOW" %}
                 <div class="card">
                     <div class="card-body">
-                        <h3 style="margin-bottom: 1rem;">Watch Progress</h3>
+                        <h3 style="margin-bottom: 1.5rem;">Watch Progress</h3>
                         {% if progress %}
-                            <p style="font-size: 1.05rem;">Watched {{ progress.watched_count }} of {{ progress.total_episodes }} episodes 
-                               ({{ progress.percentage|floatformat:0 }}%)</p>
-                            <div style="background: var(--gray-200); height: 8px; border-radius: 4px; margin-top: 1rem; overflow: hidden;">
-                                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); height: 100%; width: {{ progress.percentage }}%;"></div>
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; border-left: 4px solid linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 1rem;">
+                                    <span style="font-size: 0.95rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600;">Episodes</span>
+                                    <span style="font-size: 1.5rem; font-weight: 700; color: var(--primary-color);">{{ progress.watched_count }}<span style="color: var(--text-muted); font-size: 1.1rem;">/{{ progress.total_episodes }}</span></span>
+                                </div>
+                                
+                                <div style="margin-bottom: 1rem;">
+                                    <div style="background: var(--gray-300); height: 12px; border-radius: 6px; overflow: hidden; box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);">
+                                        <div style="background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); height: 100%; width: {{ progress.percentage }}%; border-radius: 6px; transition: width 0.3s ease; box-shadow: 0 0 8px rgba(102, 126, 234, 0.4);"></div>
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">{{ progress.percentage|floatformat:1 }}% Complete</span>
+                                    <span style="font-size: 0.85rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-weight: 600;">{{ progress.watched_count }} / {{ progress.total_episodes }}</span>
+                                </div>
                             </div>
                         {% else %}
-                            <p style="color: var(--text-muted);">No episodes watched yet</p>
+                            <div style="background: var(--bg-secondary); padding: 1.5rem; border-radius: 8px; text-align: center; border-left: 4px solid var(--gray-300);">
+                                <p style="color: var(--text-muted); margin: 0; font-size: 0.95rem;">📺 No episodes watched yet</p>
+                                <p style="color: var(--gray-400); margin: 0.5rem 0 0 0; font-size: 0.85rem;">Start marking episodes below</p>
+                            </div>
                         {% endif %}
 
                         <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Mark Episodes</h3>
