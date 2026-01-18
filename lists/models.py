@@ -137,6 +137,7 @@ class ListItem(models.Model):
         max_length=20,
         choices=WatchStatus.choices,
         default=WatchStatus.PLANNED,
+        db_index=True,
         help_text="Watch status of this item",
     )
 
@@ -150,6 +151,8 @@ class ListItem(models.Model):
         unique_together = ["list", "media"]
         indexes = [
             models.Index(fields=["list", "position"]),
+            models.Index(fields=["list", "status"]),
+            models.Index(fields=["media"]),
         ]
 
     def __str__(self) -> str:

@@ -117,6 +117,7 @@ class Media(models.Model):
     media_type = models.CharField(
         max_length=20,
         choices=MediaType.choices,
+        db_index=True,
         help_text="Type of media (MOVIE or TV_SHOW)",
     )
     created_at = models.DateTimeField(
@@ -328,6 +329,7 @@ class WatchedEpisode(models.Model):
         unique_together = ["user", "tv_show", "season_number", "episode_number"]
         indexes = [
             models.Index(fields=["user", "tv_show"]),
+            models.Index(fields=["tv_show", "season_number", "episode_number"]),
         ]
 
     def __str__(self) -> str:
