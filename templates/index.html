@@ -43,7 +43,7 @@
                 </div>
                 <div class="stat-content">
                     <div class="stat-value">{{ total_items|default:"0" }}</div>
-                    <div class="stat-label">Items Tracked</div>
+                    <div class="stat-label">Media Tracked</div>
                 </div>
             </div>
             
@@ -195,33 +195,5 @@
         <a href="{% url 'users:register' %}" class="btn btn-primary">Create Your Account Today</a>
     </div>
 </div>
-{% else %}
-{% if recent_lists %}
-<div class="container" style="padding: 3rem var(--spacing-lg);">
-    <h2 style="font-size: 1.75rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text-primary);">Recent Lists</h2>
-    <div style="display: grid; gap: 1rem;">
-        {% for list in recent_lists %}
-        <a href="{% url 'lists:detail' list_id=list.id %}" style="text-decoration: none;">
-            <div class="card" style="padding: 1.5rem; transition: transform 0.2s, box-shadow 0.2s; background: white; border-radius: var(--radius-lg); border: 1px solid var(--border-color); box-shadow: var(--shadow-sm);">
-                <div style="display: flex; justify-content: space-between; align-items: start;">
-                    <div>
-                        <h3 style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text-primary);">{{ list.name }}</h3>
-                        <p style="color: var(--text-muted); font-size: 0.875rem;">
-                            {{ list.items.count }} item{{ list.items.count|pluralize }} · Updated {{ list.updated_at|timesince }} ago
-                        </p>
-                    </div>
-                    <span style="padding: 0.25rem 0.75rem; background: var(--bg-secondary); border-radius: 12px; font-size: 0.85rem; color: var(--text-muted);">
-                        {% if list.is_public %}🌐 Public{% else %}🔒 Private{% endif %}
-                    </span>
-                </div>
-            </div>
-        </a>
-        {% endfor %}
-    </div>
-    <div style="margin-top: 1.5rem; text-align: center;">
-        <a href="{% url 'lists:my_lists' %}" class="btn btn-secondary">View All Lists</a>
-    </div>
-</div>
-{% endif %}
 {% endif %}
 {% endblock %}
