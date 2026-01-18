@@ -66,10 +66,10 @@ def sample_tv_show(db):
 class TestListServiceCreate:
     """Test cases for list creation."""
 
-    def test_create_list_with_default_visibility(self, list_service, user):
+    def test_create_list_with_default_visibility(self, list_service, user) -> None:
         """
         Test creating a private list (default behavior).
-        
+
         Arrange: User and service
         Act: Create list with default visibility
         Assert: List is created and private by default
@@ -83,10 +83,10 @@ class TestListServiceCreate:
         assert list_obj.user == user
         assert list_obj.is_public is False
 
-    def test_create_public_list(self, list_service, user):
+    def test_create_public_list(self, list_service, user) -> None:
         """
         Test creating a public list.
-        
+
         Arrange: User and service
         Act: Create list with is_public=True
         Assert: List is created and public
@@ -99,10 +99,10 @@ class TestListServiceCreate:
         assert list_obj.name == "Watch Later"
         assert list_obj.is_public is True
 
-    def test_create_multiple_lists_for_user(self, list_service, user):
+    def test_create_multiple_lists_for_user(self, list_service, user) -> None:
         """
         Test creating multiple lists for the same user.
-        
+
         Arrange: User and service
         Act: Create 3 different lists
         Assert: All lists are created with correct data
@@ -121,10 +121,10 @@ class TestListServiceCreate:
 class TestListServiceUpdate:
     """Test cases for list updates."""
 
-    def test_update_list_name(self, list_service, user):
+    def test_update_list_name(self, list_service, user) -> None:
         """
         Test updating list name.
-        
+
         Arrange: Create a list
         Act: Update the name
         Assert: Name is changed
@@ -140,10 +140,10 @@ class TestListServiceUpdate:
         list_obj.refresh_from_db()
         assert list_obj.name == "New Name"
 
-    def test_update_list_visibility(self, list_service, user):
+    def test_update_list_visibility(self, list_service, user) -> None:
         """
         Test updating list visibility.
-        
+
         Arrange: Create a private list
         Act: Make it public
         Assert: Visibility is changed
@@ -159,10 +159,10 @@ class TestListServiceUpdate:
         list_obj.refresh_from_db()
         assert list_obj.is_public is True
 
-    def test_update_list_partial_update(self, list_service, user):
+    def test_update_list_partial_update(self, list_service, user) -> None:
         """
         Test partial update (only updating one field).
-        
+
         Arrange: Create a list with specific properties
         Act: Update only the name
         Assert: Only name changes, visibility unchanged
@@ -182,10 +182,10 @@ class TestListServiceUpdate:
 class TestListServiceDelete:
     """Test cases for list deletion."""
 
-    def test_delete_empty_list(self, list_service, user):
+    def test_delete_empty_list(self, list_service, user) -> None:
         """
         Test deleting a list with no items.
-        
+
         Arrange: Create an empty list
         Act: Delete the list
         Assert: List is removed from database
@@ -200,10 +200,10 @@ class TestListServiceDelete:
         # Assert
         assert not List.objects.filter(id=list_id).exists()
 
-    def test_delete_list_with_items(self, list_service, user, sample_movie):
+    def test_delete_list_with_items(self, list_service, user, sample_movie) -> None:
         """
         Test deleting a list with items (cascade delete).
-        
+
         Arrange: Create list with items
         Act: Delete the list
         Assert: List and all items are removed
@@ -225,10 +225,10 @@ class TestListServiceDelete:
 class TestListServiceAddMedia:
     """Test cases for adding media to lists."""
 
-    def test_add_movie_to_list(self, list_service, user, sample_movie):
+    def test_add_movie_to_list(self, list_service, user, sample_movie) -> None:
         """
         Test adding a movie to a list.
-        
+
         Arrange: Create list and movie
         Act: Add movie to list
         Assert: Movie is in list with correct position
@@ -244,10 +244,10 @@ class TestListServiceAddMedia:
         assert list_item.list == list_obj
         assert list_item.position == 1
 
-    def test_add_tv_show_to_list(self, list_service, user, sample_tv_show):
+    def test_add_tv_show_to_list(self, list_service, user, sample_tv_show) -> None:
         """
         Test adding a TV show to a list.
-        
+
         Arrange: Create list and TV show
         Act: Add TV show to list
         Assert: TV show is in list
@@ -262,10 +262,10 @@ class TestListServiceAddMedia:
         assert list_item.media == sample_tv_show
         assert list_item.list == list_obj
 
-    def test_add_multiple_media_increments_position(self, list_service, user, sample_movie, sample_tv_show):
+    def test_add_multiple_media_increments_position(self, list_service, user, sample_movie, sample_tv_show) -> None:
         """
         Test adding multiple media items increments position correctly.
-        
+
         Arrange: Create list and two media items
         Act: Add both to list
         Assert: Positions are sequential (1, 2)
@@ -281,10 +281,10 @@ class TestListServiceAddMedia:
         assert item1.position == 1
         assert item2.position == 2
 
-    def test_add_duplicate_media_raises_error(self, list_service, user, sample_movie):
+    def test_add_duplicate_media_raises_error(self, list_service, user, sample_movie) -> None:
         """
         Test adding the same media twice raises ValueError.
-        
+
         Arrange: Add media to list
         Act: Try to add same media again
         Assert: ValueError is raised
@@ -302,10 +302,10 @@ class TestListServiceAddMedia:
 class TestListServiceRemoveMedia:
     """Test cases for removing media from lists."""
 
-    def test_remove_media_from_list(self, list_service, user, sample_movie):
+    def test_remove_media_from_list(self, list_service, user, sample_movie) -> None:
         """
         Test removing media from a list.
-        
+
         Arrange: Add media to list
         Act: Remove media
         Assert: Media is no longer in list
@@ -321,10 +321,10 @@ class TestListServiceRemoveMedia:
         assert removed is True
         assert not ListItem.objects.filter(list=list_obj, media=sample_movie).exists()
 
-    def test_remove_nonexistent_media_returns_false(self, list_service, user, sample_movie):
+    def test_remove_nonexistent_media_returns_false(self, list_service, user, sample_movie) -> None:
         """
         Test removing media that isn't in the list.
-        
+
         Arrange: Create empty list
         Act: Try to remove media
         Assert: Returns False
@@ -343,10 +343,10 @@ class TestListServiceRemoveMedia:
 class TestListServiceMoveItems:
     """Test cases for moving items between lists."""
 
-    def test_move_item_to_another_list(self, list_service, user, sample_movie):
+    def test_move_item_to_another_list(self, list_service, user, sample_movie) -> None:
         """
         Test moving an item from one list to another.
-        
+
         Arrange: Create two lists, add item to first
         Act: Move item to second list
         Assert: Item is in second list, not in first
@@ -363,10 +363,10 @@ class TestListServiceMoveItems:
         assert moved_item.list == list2
         assert not ListItem.objects.filter(list=list1, media=sample_movie).exists()
 
-    def test_move_item_between_different_users_raises_error(self, list_service, user, another_user, sample_movie):
+    def test_move_item_between_different_users_raises_error(self, list_service, user, another_user, sample_movie) -> None:
         """
         Test moving item between lists of different users raises error.
-        
+
         Arrange: Create lists for two users
         Act: Try to move item from user1's list to user2's list
         Assert: ValueError is raised
@@ -380,10 +380,10 @@ class TestListServiceMoveItems:
         with pytest.raises(ValueError, match="different users"):
             list_service.move_item_to_list(list_item, list2)
 
-    def test_move_item_to_list_with_duplicate_raises_error(self, list_service, user, sample_movie):
+    def test_move_item_to_list_with_duplicate_raises_error(self, list_service, user, sample_movie) -> None:
         """
         Test moving item to list that already has that media.
-        
+
         Arrange: Add same media to two lists
         Act: Try to move item from list1 to list2
         Assert: ValueError is raised
@@ -403,10 +403,10 @@ class TestListServiceMoveItems:
 class TestListServiceGetLists:
     """Test cases for retrieving user lists."""
 
-    def test_get_user_lists_all(self, list_service, user):
+    def test_get_user_lists_all(self, list_service, user) -> None:
         """
         Test getting all lists for a user.
-        
+
         Arrange: Create 3 lists (2 private, 1 public)
         Act: Get all user lists
         Assert: All 3 lists are returned
@@ -422,10 +422,10 @@ class TestListServiceGetLists:
         # Assert
         assert len(lists) == 3
 
-    def test_get_user_lists_public_only(self, list_service, user):
+    def test_get_user_lists_public_only(self, list_service, user) -> None:
         """
         Test getting only public lists.
-        
+
         Arrange: Create 2 private and 1 public list
         Act: Get public lists only
         Assert: Only 1 list is returned
@@ -447,10 +447,10 @@ class TestListServiceGetLists:
 class TestListServiceGetItems:
     """Test cases for retrieving list items."""
 
-    def test_get_list_items_ordered_by_position(self, list_service, user, sample_movie, sample_tv_show):
+    def test_get_list_items_ordered_by_position(self, list_service, user, sample_movie, sample_tv_show) -> None:
         """
         Test getting list items ordered by position.
-        
+
         Arrange: Create list with 2 items
         Act: Get list items
         Assert: Items are in correct order
@@ -469,10 +469,10 @@ class TestListServiceGetItems:
         assert items[1].media.id == sample_tv_show.id
         assert items[0].position < items[1].position
 
-    def test_get_empty_list_items(self, list_service, user):
+    def test_get_empty_list_items(self, list_service, user) -> None:
         """
         Test getting items from an empty list.
-        
+
         Arrange: Create empty list
         Act: Get list items
         Assert: Empty list is returned

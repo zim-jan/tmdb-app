@@ -45,10 +45,10 @@ def profile_service():
 class TestProfileServiceCreate:
     """Test cases for profile creation."""
 
-    def test_create_profile_for_user(self, profile_service, user):
+    def test_create_profile_for_user(self, profile_service, user) -> None:
         """
         Test creating a profile for a user.
-        
+
         Arrange: User without profile
         Act: Create profile
         Assert: Profile is created with default values
@@ -64,10 +64,10 @@ class TestProfileServiceCreate:
         assert profile.show_lists is True
         assert profile.bio == ""
 
-    def test_create_profile_for_user_with_existing_profile_raises_error(self, profile_service, user):
+    def test_create_profile_for_user_with_existing_profile_raises_error(self, profile_service, user) -> None:
         """
         Test creating profile for user who already has one.
-        
+
         Arrange: User with existing profile
         Act: Try to create another profile
         Assert: ValueError is raised
@@ -79,10 +79,10 @@ class TestProfileServiceCreate:
         with pytest.raises(ValueError, match="already has a public profile"):
             profile_service.create_profile(user)
 
-    def test_create_profiles_for_multiple_users(self, profile_service, user, another_user):
+    def test_create_profiles_for_multiple_users(self, profile_service, user, another_user) -> None:
         """
         Test creating profiles for different users.
-        
+
         Arrange: Two different users
         Act: Create profile for each
         Assert: Both profiles are created
@@ -101,10 +101,10 @@ class TestProfileServiceCreate:
 class TestProfileServiceUpdate:
     """Test cases for profile updates."""
 
-    def test_update_profile_bio(self, profile_service, user):
+    def test_update_profile_bio(self, profile_service, user) -> None:
         """
         Test updating profile biography.
-        
+
         Arrange: Create profile with empty bio
         Act: Update bio
         Assert: Bio is changed
@@ -121,10 +121,10 @@ class TestProfileServiceUpdate:
         profile.refresh_from_db()
         assert profile.bio == new_bio
 
-    def test_update_profile_avatar_url(self, profile_service, user):
+    def test_update_profile_avatar_url(self, profile_service, user) -> None:
         """
         Test updating profile avatar URL.
-        
+
         Arrange: Create profile without avatar
         Act: Set avatar URL
         Assert: Avatar URL is updated
@@ -139,10 +139,10 @@ class TestProfileServiceUpdate:
         # Assert
         assert updated_profile.avatar_url == avatar_url
 
-    def test_update_profile_visibility(self, profile_service, user):
+    def test_update_profile_visibility(self, profile_service, user) -> None:
         """
         Test updating profile visibility.
-        
+
         Arrange: Create public profile
         Act: Make it private
         Assert: Visibility is changed
@@ -158,10 +158,10 @@ class TestProfileServiceUpdate:
         profile.refresh_from_db()
         assert profile.is_visible is False
 
-    def test_update_profile_show_watched_episodes(self, profile_service, user):
+    def test_update_profile_show_watched_episodes(self, profile_service, user) -> None:
         """
         Test updating show_watched_episodes flag.
-        
+
         Arrange: Create profile with default settings
         Act: Disable showing watched episodes
         Assert: Flag is changed
@@ -175,10 +175,10 @@ class TestProfileServiceUpdate:
         # Assert
         assert updated_profile.show_watched_episodes is False
 
-    def test_update_profile_show_lists(self, profile_service, user):
+    def test_update_profile_show_lists(self, profile_service, user) -> None:
         """
         Test updating show_lists flag.
-        
+
         Arrange: Create profile with default settings
         Act: Disable showing lists
         Assert: Flag is changed
@@ -192,10 +192,10 @@ class TestProfileServiceUpdate:
         # Assert
         assert updated_profile.show_lists is False
 
-    def test_update_profile_partial_update(self, profile_service, user):
+    def test_update_profile_partial_update(self, profile_service, user) -> None:
         """
         Test partial profile update (only some fields).
-        
+
         Arrange: Create profile with default values
         Act: Update only bio
         Assert: Only bio changes, other fields unchanged
@@ -211,10 +211,10 @@ class TestProfileServiceUpdate:
         assert updated_profile.bio == "New bio"
         assert updated_profile.is_visible == original_visibility
 
-    def test_update_profile_multiple_fields(self, profile_service, user):
+    def test_update_profile_multiple_fields(self, profile_service, user) -> None:
         """
         Test updating multiple fields at once.
-        
+
         Arrange: Create profile
         Act: Update bio, avatar, and visibility
         Assert: All fields are updated
@@ -240,10 +240,10 @@ class TestProfileServiceUpdate:
 class TestProfileServiceGetByNickname:
     """Test cases for getting profile by nickname."""
 
-    def test_get_visible_profile_by_nickname(self, profile_service, user):
+    def test_get_visible_profile_by_nickname(self, profile_service, user) -> None:
         """
         Test getting a visible profile by nickname.
-        
+
         Arrange: Create visible profile
         Act: Get profile by nickname
         Assert: Profile is returned
@@ -258,10 +258,10 @@ class TestProfileServiceGetByNickname:
         assert profile is not None
         assert profile.user.nickname == "testuser"
 
-    def test_get_invisible_profile_returns_none(self, profile_service, user):
+    def test_get_invisible_profile_returns_none(self, profile_service, user) -> None:
         """
         Test getting an invisible profile returns None.
-        
+
         Arrange: Create invisible profile
         Act: Get profile by nickname
         Assert: None is returned
@@ -276,10 +276,10 @@ class TestProfileServiceGetByNickname:
         # Assert
         assert result is None
 
-    def test_get_nonexistent_profile_returns_none(self, profile_service):
+    def test_get_nonexistent_profile_returns_none(self, profile_service) -> None:
         """
         Test getting a profile that doesn't exist.
-        
+
         Arrange: No profiles created
         Act: Get profile by nickname
         Assert: None is returned
@@ -290,10 +290,10 @@ class TestProfileServiceGetByNickname:
         # Assert
         assert result is None
 
-    def test_get_profile_by_nickname_case_sensitive(self, profile_service, user):
+    def test_get_profile_by_nickname_case_sensitive(self, profile_service, user) -> None:
         """
         Test that nickname lookup is case-sensitive.
-        
+
         Arrange: Create profile with lowercase nickname
         Act: Search with different case
         Assert: Returns None (assuming case-sensitive)
@@ -313,10 +313,10 @@ class TestProfileServiceGetByNickname:
 class TestProfileServiceGetOrCreate:
     """Test cases for get_or_create_profile method."""
 
-    def test_get_or_create_creates_new_profile(self, profile_service, user):
+    def test_get_or_create_creates_new_profile(self, profile_service, user) -> None:
         """
         Test creating a new profile via get_or_create.
-        
+
         Arrange: User without profile
         Act: Call get_or_create
         Assert: New profile is created
@@ -328,10 +328,10 @@ class TestProfileServiceGetOrCreate:
         assert profile.id is not None
         assert profile.user == user
 
-    def test_get_or_create_gets_existing_profile(self, profile_service, user):
+    def test_get_or_create_gets_existing_profile(self, profile_service, user) -> None:
         """
         Test getting existing profile via get_or_create.
-        
+
         Arrange: User with existing profile
         Act: Call get_or_create
         Assert: Existing profile is returned
@@ -347,10 +347,10 @@ class TestProfileServiceGetOrCreate:
         assert profile.id == existing_id
         assert PublicProfile.objects.filter(user=user).count() == 1
 
-    def test_get_or_create_multiple_calls_same_profile(self, profile_service, user):
+    def test_get_or_create_multiple_calls_same_profile(self, profile_service, user) -> None:
         """
         Test multiple get_or_create calls return same profile.
-        
+
         Arrange: User without profile
         Act: Call get_or_create three times
         Assert: All calls return same profile ID

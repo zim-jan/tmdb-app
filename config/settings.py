@@ -13,8 +13,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 import os
 from pathlib import Path
 
-from dotenv import load_dotenv
 import dj_database_url
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -216,14 +216,14 @@ if os.getenv("REDIS_URL"):
 # Security settings
 # Disable SSL redirect for localhost/127.0.0.1 (development server doesn't support HTTPS)
 # In dev mode, always disable SSL redirect
-SECURE_SSL_REDIRECT = False if DEBUG else True
-SESSION_COOKIE_SECURE = False if DEBUG else True
-CSRF_COOKIE_SECURE = False if DEBUG else True
+SECURE_SSL_REDIRECT = not DEBUG
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000
-SECURE_HSTS_INCLUDE_SUBDOMAINS = False if DEBUG else True
-SECURE_HSTS_PRELOAD = False if DEBUG else True
+SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG
+SECURE_HSTS_PRELOAD = not DEBUG
 
 # Proxy SSL header (needed behind reverse proxies)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

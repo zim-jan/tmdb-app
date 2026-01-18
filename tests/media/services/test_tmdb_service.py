@@ -4,8 +4,9 @@ Unit tests for TMDb service module.
 This module tests the TMDb API integration service.
 """
 
-import pytest
 from unittest.mock import Mock, patch
+
+import pytest
 import requests
 
 from media.services.tmdb_service import TMDbService
@@ -18,6 +19,8 @@ def tmdb_service():
         service = TMDbService()
         service.api_key = "test_api_key_12345"
         service.base_url = "https://api.themoviedb.org/3"
+        service.timeout = 10
+        service.cache_timeout = 86400
         return service
 
 
@@ -94,10 +97,10 @@ class TestTMDbServiceMakeRequest:
     """Test cases for _make_request method."""
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_make_request_success(self, mock_get, tmdb_service):
+    def test_make_request_success(self, mock_get, tmdb_service) -> None:
         """
         Test successful API request.
-        
+
         Arrange: Mock successful API response
         Act: Make request
         Assert: Returns JSON data
@@ -116,10 +119,10 @@ class TestTMDbServiceMakeRequest:
         mock_get.assert_called_once()
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_make_request_includes_api_key(self, mock_get, tmdb_service):
+    def test_make_request_includes_api_key(self, mock_get, tmdb_service) -> None:
         """
         Test that API key is included in request.
-        
+
         Arrange: Mock API response
         Act: Make request
         Assert: API key is in params
@@ -139,10 +142,10 @@ class TestTMDbServiceMakeRequest:
         assert call_args[1]["params"]["query"] == "test"
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_make_request_handles_http_error(self, mock_get, tmdb_service):
+    def test_make_request_handles_http_error(self, mock_get, tmdb_service) -> None:
         """
         Test handling of HTTP errors.
-        
+
         Arrange: Mock API error response
         Act: Make request
         Assert: HTTPError is raised
@@ -157,10 +160,10 @@ class TestTMDbServiceMakeRequest:
             tmdb_service._make_request("invalid/endpoint")
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_make_request_timeout(self, mock_get, tmdb_service):
+    def test_make_request_timeout(self, mock_get, tmdb_service) -> None:
         """
         Test request timeout handling.
-        
+
         Arrange: Mock timeout
         Act: Make request
         Assert: Timeout exception is raised
@@ -170,17 +173,17 @@ class TestTMDbServiceMakeRequest:
 
         # Act & Assert
         with pytest.raises(requests.Timeout):
-            tmdb_service._make_request("test/endpoint")
+            tmdb_service._make_request("test/endpoint", use_cache=False)
 
 
 class TestTMDbServiceSearchMovie:
     """Test cases for search_movie method."""
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_search_movie_returns_results(self, mock_get, tmdb_service, mock_movie_search_response):
+    def test_search_movie_returns_results(self, mock_get, tmdb_service, mock_movie_search_response) -> None:
         """
         Test searching for movies returns results.
-        
+
         Arrange: Mock search response with multiple results
         Act: Search for "Matrix"
         Assert: Returns list of movie results
@@ -200,10 +203,10 @@ class TestTMDbServiceSearchMovie:
         assert results[1]["title"] == "The Matrix Reloaded"
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_search_movie_no_results(self, mock_get, tmdb_service):
+    def test_search_movie_no_results(self, mock_get, tmdb_service) -> None:
         """
         Test searching for movies with no results.
-        
+
         Arrange: Mock empty search response
         Act: Search for non-existent movie
         Assert: Returns empty list
@@ -221,10 +224,10 @@ class TestTMDbServiceSearchMovie:
         assert results == []
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_search_movie_missing_results_key(self, mock_get, tmdb_service):
+    def test_search_movie_missing_results_key(self, mock_get, tmdb_service) -> None:
         """
         Test handling response without 'results' key.
-        
+
         Arrange: Mock malformed response
         Act: Search for movie
         Assert: Returns empty list
@@ -246,10 +249,10 @@ class TestTMDbServiceSearchTVShow:
     """Test cases for search_tv_show method."""
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_search_tv_show_returns_results(self, mock_get, tmdb_service, mock_tv_search_response):
+    def test_search_tv_show_returns_results(self, mock_get, tmdb_service, mock_tv_search_response) -> None:
         """
         Test searching for TV shows returns results.
-        
+
         Arrange: Mock search response
         Act: Search for "Breaking Bad"
         Assert: Returns list of TV show results
@@ -269,10 +272,10 @@ class TestTMDbServiceSearchTVShow:
         assert results[0]["id"] == 1396
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_search_tv_show_no_results(self, mock_get, tmdb_service):
+    def test_search_tv_show_no_results(self, mock_get, tmdb_service) -> None:
         """
         Test searching for TV shows with no results.
-        
+
         Arrange: Mock empty search response
         Act: Search for non-existent show
         Assert: Returns empty list
@@ -294,10 +297,10 @@ class TestTMDbServiceGetDetails:
     """Test cases for get_movie_details and get_tv_details methods."""
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_get_movie_details(self, mock_get, tmdb_service, mock_movie_details_response):
+    def test_get_movie_details(self, mock_get, tmdb_service, mock_movie_details_response) -> None:
         """
         Test getting movie details by TMDb ID.
-        
+
         Arrange: Mock movie details response
         Act: Get details for movie ID 27205
         Assert: Returns complete movie data
@@ -317,10 +320,10 @@ class TestTMDbServiceGetDetails:
         assert details["budget"] == 160000000
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_get_tv_details(self, mock_get, tmdb_service):
+    def test_get_tv_details(self, mock_get, tmdb_service) -> None:
         """
         Test getting TV show details by TMDb ID.
-        
+
         Arrange: Mock TV details response
         Act: Get details for TV show
         Assert: Returns complete TV show data
@@ -349,10 +352,10 @@ class TestTMDbServiceGetCredits:
     """Test cases for credits retrieval methods."""
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_get_movie_credits(self, mock_get, tmdb_service):
+    def test_get_movie_credits(self, mock_get, tmdb_service) -> None:
         """
         Test getting movie credits (cast and crew).
-        
+
         Arrange: Mock credits response
         Act: Get credits for movie
         Assert: Returns cast and crew data
@@ -380,10 +383,10 @@ class TestTMDbServiceGetCredits:
         assert credits["cast"][0]["name"] == "Leonardo DiCaprio"
 
     @patch('media.services.tmdb_service.requests.get')
-    def test_get_tv_credits(self, mock_get, tmdb_service):
+    def test_get_tv_credits(self, mock_get, tmdb_service) -> None:
         """
         Test getting TV show credits.
-        
+
         Arrange: Mock TV credits response
         Act: Get credits for TV show
         Assert: Returns cast and crew data

@@ -187,10 +187,10 @@ class TestMediaDetailsAPIMovies:
         mock_tmdb_movie_details,
         mock_tmdb_movie_credits,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test successful retrieval of movie details.
-        
+
         Validates that the API returns correct structure with all expected fields
         including details, credits, directors, cast, and external IDs.
         """
@@ -260,10 +260,10 @@ class TestMediaDetailsAPIMovies:
         authenticated_user,
         mock_tmdb_movie_details,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test that only crew members with 'Director' job are included in directors list.
-        
+
         Verifies filtering logic excludes producers, writers, and other crew roles,
         and limits results to maximum of 2 directors.
         """
@@ -311,10 +311,10 @@ class TestMediaDetailsAPIMovies:
         authenticated_user,
         mock_tmdb_movie_details,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test that cast list is limited to 10 actors maximum.
-        
+
         Validates slicing behavior when API returns more than 10 cast members.
         """
         # Arrange
@@ -361,10 +361,10 @@ class TestMediaDetailsAPITVShows:
         mock_tmdb_tv_details,
         mock_tmdb_tv_credits,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test successful retrieval of TV show details.
-        
+
         Validates that TV shows return correct structure including series-specific
         fields like number_of_seasons, number_of_episodes, and created_by.
         """
@@ -418,10 +418,10 @@ class TestMediaDetailsAPITVShows:
         request_factory,
         authenticated_user,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test TV show details when created_by list is empty.
-        
+
         Validates graceful handling of missing creator information.
         """
         # Arrange
@@ -461,10 +461,10 @@ class TestMediaDetailsAPITVShows:
 class TestMediaDetailsAPIErrorHandling:
     """Test suite for error handling and edge cases."""
 
-    def test_unauthorized_access_redirects(self, request_factory):
+    def test_unauthorized_access_redirects(self, request_factory) -> None:
         """
         Test that unauthenticated requests are properly handled by login_required.
-        
+
         The @login_required decorator should redirect to login page.
         """
         # Arrange
@@ -490,10 +490,10 @@ class TestMediaDetailsAPIErrorHandling:
         self,
         request_factory,
         authenticated_user
-    ):
+    ) -> None:
         """
         Test error handling when TMDb service raises an exception.
-        
+
         Validates that exceptions are caught and returned as JSON error response
         with 500 status code.
         """
@@ -524,10 +524,10 @@ class TestMediaDetailsAPIErrorHandling:
         authenticated_user,
         mock_tmdb_movie_details,
         mock_tmdb_movie_credits
-    ):
+    ) -> None:
         """
         Test graceful handling when external_ids endpoint returns no IMDB ID.
-        
+
         Validates that missing imdb_id doesn't break the response.
         """
         # Arrange
@@ -565,10 +565,10 @@ class TestMediaDetailsAPIErrorHandling:
         authenticated_user,
         mock_tmdb_movie_details,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test handling of movies with no cast or crew information.
-        
+
         Validates that empty credits lists don't cause errors.
         """
         # Arrange
@@ -606,10 +606,10 @@ class TestMediaDetailsAPIErrorHandling:
         authenticated_user,
         mock_tmdb_movie_details,
         mock_external_ids
-    ):
+    ) -> None:
         """
         Test resilience when credits have malformed or missing fields.
-        
+
         Validates that missing 'name', 'character', or 'profile_path' fields
         are handled gracefully using .get() method.
         """

@@ -34,7 +34,7 @@ def client():
 class TestIndexView:
     """Test cases for index_view function."""
 
-    def test_index_view_anonymous_user_returns_empty_context(self, client):
+    def test_index_view_anonymous_user_returns_empty_context(self, client) -> None:
         """
         Test that anonymous users get an empty context on the home page.
 
@@ -50,10 +50,10 @@ class TestIndexView:
         # Anonymous users shouldn't see stats
         assert "total_lists" not in response.context
 
-    def test_index_view_authenticated_user_with_no_data(self, client, user):
+    def test_index_view_authenticated_user_with_no_data(self, client, user) -> None:
         """
         Test authenticated user with no lists or watched episodes.
-        
+
         Arrange: Create authenticated user with no data
         Act: Call index_view
         Assert: All counts are zero
@@ -70,10 +70,10 @@ class TestIndexView:
         assert response.context["total_items"] == 0
         assert response.context["total_watched"] == 0
 
-    def test_index_view_authenticated_user_with_lists(self, client, user):
+    def test_index_view_authenticated_user_with_lists(self, client, user) -> None:
         """
         Test authenticated user with multiple lists and items.
-        
+
         Arrange: Create user with 3 lists and 5 total items (different movies)
         Act: Call index_view
         Assert: Correct counts are displayed
@@ -117,10 +117,10 @@ class TestIndexView:
         assert response.context["total_lists"] == 3
         assert response.context["total_items"] == 5
 
-    def test_index_view_authenticated_user_with_watched_episodes(self, client, user):
+    def test_index_view_authenticated_user_with_watched_episodes(self, client, user) -> None:
         """
         Test authenticated user with watched episodes.
-        
+
         Arrange: Create user with 10 watched episodes
         Act: Call index_view
         Assert: Watched count is correct
@@ -151,10 +151,10 @@ class TestIndexView:
         assert response.status_code == 200
         assert response.context["total_watched"] == 10
 
-    def test_index_view_recent_lists_ordered_by_updated_at(self, client, user):
+    def test_index_view_recent_lists_ordered_by_updated_at(self, client, user) -> None:
         """
         Test that recent lists are ordered by updated_at descending.
-        
+
         Arrange: Create 6 lists with different update times
         Act: Call index_view
         Assert: Only 5 most recent lists are returned in correct order
@@ -182,10 +182,10 @@ class TestIndexView:
 class TestCustom404:
     """Test cases for custom_404 error handler."""
 
-    def test_custom_404_returns_404_status(self, client):
+    def test_custom_404_returns_404_status(self, client) -> None:
         """
         Test that custom 404 handler returns 404 status code.
-        
+
         Arrange: Request a non-existent page
         Act: Get response
         Assert: Status code is 404
@@ -196,10 +196,10 @@ class TestCustom404:
         # Assert
         assert response.status_code == 404
 
-    def test_custom_404_for_different_paths(self, client):
+    def test_custom_404_for_different_paths(self, client) -> None:
         """
         Test that custom 404 handler works for various non-existent paths.
-        
+
         Arrange: Request multiple non-existent pages
         Act: Get responses
         Assert: All return 404 status

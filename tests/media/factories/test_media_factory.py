@@ -4,25 +4,26 @@ Unit tests for media factory module.
 This module tests the Abstract Factory pattern implementation for Media objects.
 """
 
-import pytest
 from datetime import date
+
+import pytest
 
 from media.factories.media_factory import (
     MediaFactoryProvider,
     MovieFactory,
     TVShowFactory,
 )
-from media.models import Movie, TVShow, MediaType
+from media.models import MediaType, Movie, TVShow
 
 
 @pytest.mark.django_db
 class TestMovieFactory:
     """Test cases for MovieFactory."""
 
-    def test_create_movie_with_minimal_data(self):
+    def test_create_movie_with_minimal_data(self) -> None:
         """
         Test creating a movie with only required fields.
-        
+
         Arrange: Prepare minimal movie data
         Act: Create movie via factory
         Assert: Movie is created with correct type
@@ -44,10 +45,10 @@ class TestMovieFactory:
         assert movie.media_type == MediaType.MOVIE
         assert movie.id is not None
 
-    def test_create_movie_with_full_data(self):
+    def test_create_movie_with_full_data(self) -> None:
         """
         Test creating a movie with all available fields.
-        
+
         Arrange: Prepare complete movie data
         Act: Create movie via factory
         Assert: All fields are correctly set
@@ -82,10 +83,10 @@ class TestMovieFactory:
         assert movie.vote_average == 8.4
         assert movie.media_type == MediaType.MOVIE
 
-    def test_create_multiple_movies(self):
+    def test_create_multiple_movies(self) -> None:
         """
         Test creating multiple distinct movies.
-        
+
         Arrange: Prepare data for 3 different movies
         Act: Create all movies
         Assert: All movies are created with unique IDs
@@ -110,10 +111,10 @@ class TestMovieFactory:
 class TestTVShowFactory:
     """Test cases for TVShowFactory."""
 
-    def test_create_tv_show_with_minimal_data(self):
+    def test_create_tv_show_with_minimal_data(self) -> None:
         """
         Test creating a TV show with only required fields.
-        
+
         Arrange: Prepare minimal TV show data
         Act: Create TV show via factory
         Assert: TV show is created with correct type
@@ -135,10 +136,10 @@ class TestTVShowFactory:
         assert tv_show.media_type == MediaType.TV_SHOW
         assert tv_show.id is not None
 
-    def test_create_tv_show_with_full_data(self):
+    def test_create_tv_show_with_full_data(self) -> None:
         """
         Test creating a TV show with all available fields.
-        
+
         Arrange: Prepare complete TV show data
         Act: Create TV show via factory
         Assert: All fields are correctly set
@@ -173,10 +174,10 @@ class TestTVShowFactory:
         assert tv_show.vote_average == 8.3
         assert tv_show.media_type == MediaType.TV_SHOW
 
-    def test_create_multiple_tv_shows(self):
+    def test_create_multiple_tv_shows(self) -> None:
         """
         Test creating multiple distinct TV shows.
-        
+
         Arrange: Prepare data for 3 different TV shows
         Act: Create all TV shows
         Assert: All TV shows are created with unique IDs
@@ -201,10 +202,10 @@ class TestTVShowFactory:
 class TestMediaFactoryProvider:
     """Test cases for MediaFactoryProvider."""
 
-    def test_get_movie_factory(self):
+    def test_get_movie_factory(self) -> None:
         """
         Test getting MovieFactory from provider.
-        
+
         Arrange: Provider and media type
         Act: Request movie factory
         Assert: Returns MovieFactory instance
@@ -215,10 +216,10 @@ class TestMediaFactoryProvider:
         # Assert
         assert isinstance(factory, MovieFactory)
 
-    def test_get_tv_show_factory(self):
+    def test_get_tv_show_factory(self) -> None:
         """
         Test getting TVShowFactory from provider.
-        
+
         Arrange: Provider and media type
         Act: Request TV show factory
         Assert: Returns TVShowFactory instance
@@ -229,10 +230,10 @@ class TestMediaFactoryProvider:
         # Assert
         assert isinstance(factory, TVShowFactory)
 
-    def test_get_factory_with_invalid_type_raises_error(self):
+    def test_get_factory_with_invalid_type_raises_error(self) -> None:
         """
         Test that requesting unknown media type raises ValueError.
-        
+
         Arrange: Invalid media type string
         Act: Request factory with invalid type
         Assert: ValueError is raised
@@ -241,10 +242,10 @@ class TestMediaFactoryProvider:
         with pytest.raises(ValueError, match="Unknown media type"):
             MediaFactoryProvider.get_factory("INVALID_TYPE")
 
-    def test_factories_return_different_instances(self):
+    def test_factories_return_different_instances(self) -> None:
         """
         Test that each call returns a new factory instance.
-        
+
         Arrange: Multiple requests for same type
         Act: Get factory twice
         Assert: Different instances are returned
@@ -261,10 +262,10 @@ class TestMediaFactoryProvider:
 class TestFactoryIntegration:
     """Integration tests for factory pattern usage."""
 
-    def test_create_movie_via_provider(self):
+    def test_create_movie_via_provider(self) -> None:
         """
         Test creating a movie through the provider.
-        
+
         Arrange: Get factory from provider
         Act: Create movie
         Assert: Movie is created correctly
@@ -286,10 +287,10 @@ class TestFactoryIntegration:
         assert movie.title == "Interstellar"
         assert movie.runtime == 169
 
-    def test_create_tv_show_via_provider(self):
+    def test_create_tv_show_via_provider(self) -> None:
         """
         Test creating a TV show through the provider.
-        
+
         Arrange: Get factory from provider
         Act: Create TV show
         Assert: TV show is created correctly
@@ -311,10 +312,10 @@ class TestFactoryIntegration:
         assert tv_show.title == "Stranger Things"
         assert tv_show.number_of_seasons == 4
 
-    def test_create_mixed_media_types(self):
+    def test_create_mixed_media_types(self) -> None:
         """
         Test creating both movies and TV shows in same session.
-        
+
         Arrange: Get both factory types
         Act: Create one movie and one TV show
         Assert: Both are created with correct types

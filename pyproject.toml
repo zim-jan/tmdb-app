@@ -24,4 +24,5 @@ dependencies = [
 python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
+testpaths = ["tests"]
 addopts = "--ds=config.settings"

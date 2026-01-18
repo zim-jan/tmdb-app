@@ -77,7 +77,7 @@ class ManualMediaForm(forms.ModelForm):
             ),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, **kwargs) -> None:
         """Initialize form with custom styling and default values."""
         super().__init__(*args, **kwargs)
         self.fields["original_title"].required = False

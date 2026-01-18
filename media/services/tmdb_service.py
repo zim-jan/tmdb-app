@@ -4,6 +4,7 @@ TMDb API integration service.
 This module provides service layer for interacting with The Movie Database API.
 """
 
+import hashlib
 import logging
 from typing import Any
 
@@ -66,7 +67,9 @@ class TMDbService:
         # Exclude api_key from cache key for security
         params_copy = {k: v for k, v in (params or {}).items() if k != "api_key"}
         params_str = "|".join(f"{k}={v}" for k, v in sorted(params_copy.items()))
-        return f"tmdb:{endpoint}:{params_str}"
+        # Use hash to avoid memcached key restrictions
+        params_hash = hashlib.md5(params_str.encode()).hexdigest()
+        return f"tmdb:{endpoint}:{params_hash}"
 
     def _make_request(self, endpoint: str, params: dict[str, Any] | None = None, use_cache: bool = True) -> dict[str, Any]:
         """

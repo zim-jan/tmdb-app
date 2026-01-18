@@ -281,17 +281,16 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
 
     # Prepare seasons data with episode counts for TV shows
     seasons_with_episodes = []
-    if media.media_type == "TV_SHOW":
-        if tmdb_data and tmdb_data.get('seasons'):
-            for season in tmdb_data.get('seasons', []):
-                season_num = season.get('season_number', 0)
-                episode_count = season.get('episode_count')
-                # Only include if episode_count is available (don't guess)
-                if episode_count:
-                    seasons_with_episodes.append({
-                        'season_number': season_num,
-                        'episode_count': episode_count
-                    })
+    if media.media_type == "TV_SHOW" and tmdb_data and tmdb_data.get('seasons'):
+        for season in tmdb_data.get('seasons', []):
+            season_num = season.get('season_number', 0)
+            episode_count = season.get('episode_count')
+            # Only include if episode_count is available (don't guess)
+            if episode_count:
+                seasons_with_episodes.append({
+                    'season_number': season_num,
+                    'episode_count': episode_count
+                })
         # If no seasons data available, skip showing season list
         # Better to show nothing than incorrect episode counts
 
