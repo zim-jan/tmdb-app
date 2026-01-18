@@ -29,7 +29,14 @@ class ManualMediaForm(forms.ModelForm):
 
     class Meta:
         model = Media
-        fields = ["title", "media_type", "original_title", "overview", "release_date"]
+        fields = [
+            "title",
+            "media_type",
+            "original_title",
+            "original_language",
+            "overview",
+            "release_date",
+        ]
         widgets = {
             "title": forms.TextInput(
                 attrs={
@@ -45,6 +52,13 @@ class ManualMediaForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "placeholder": "Original title (optional)",
+                }
+            ),
+            "original_language": forms.TextInput(
+                attrs={
+                    "class": "form-control",
+                    "placeholder": "ISO 639-1 code (e.g., en, pl, es)",
+                    "maxlength": "10",
                 }
             ),
             "overview": forms.Textarea(
@@ -64,8 +78,13 @@ class ManualMediaForm(forms.ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        """Initialize form with custom styling."""
+        """Initialize form with custom styling and default values."""
         super().__init__(*args, **kwargs)
         self.fields["original_title"].required = False
+        self.fields["original_language"].required = False
         self.fields["overview"].required = False
         self.fields["release_date"].required = False
+        
+        # Set default language to 'en' if not provided
+        if not self.initial.get("original_language"):
+            self.fields["original_language"].initial = "en"
