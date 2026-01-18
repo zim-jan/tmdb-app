@@ -1,4 +1,4 @@
-line-length = 320
+line-length = 120
 target-version = "py312"
 exclude = [
     ".git",
