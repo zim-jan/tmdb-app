@@ -245,6 +245,26 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
             watched_episodes_set = {(ep.season_number, ep.episode_number) for ep in watched_episodes}
             progress = tracking_service.get_watch_progress(request.user, tv_show)
 
+    # Prepare seasons data with episode counts for TV shows
+    seasons_with_episodes = []
+    if media.media_type == "TV_SHOW":
+        if tmdb_data and tmdb_data.get('seasons'):
+            for season in tmdb_data.get('seasons', []):
+                season_num = season.get('season_number', 0)
+                episode_count = season.get('episode_count', 20)  # Default to 20 if not available
+                seasons_with_episodes.append({
+                    'season_number': season_num,
+                    'episode_count': episode_count
+                })
+        else:
+            # Fallback: assume 20 episodes per season
+            if tv_show:
+                for i in range(tv_show.number_of_seasons):
+                    seasons_with_episodes.append({
+                        'season_number': i,
+                        'episode_count': 20
+                    })
+
     return render(request, "media/detail.html", {
         "media": media,
         "tv_show": tv_show,
@@ -255,6 +275,7 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
         "tmdb_data": tmdb_data,
         "cast": cast,
         "directors": directors,
+        "seasons_with_episodes": seasons_with_episodes,
     })
 
 
@@ -412,10 +433,43 @@ def watch_history_view(request: HttpRequest) -> HttpResponse:
     HttpResponse
         Rendered watch history page.
     """
-    watched = WatchedEpisode.objects.filter(user=request.user).select_related("tv_show").order_by("-watched_at")[:50]
+    from lists.models import WatchStatus
+    
+    # Get watched episodes
+    watched_episodes = WatchedEpisode.objects.filter(user=request.user).select_related("tv_show").order_by("-watched_at")[:50]
+    
+    # Get watched movies from lists
+    watched_movies = ListItem.objects.filter(
+        list__user=request.user,
+        status=WatchStatus.WATCHED,
+        media__media_type="MOVIE"
+    ).select_related("media").order_by("-added_at")[:50]
+    
+    # Combine and sort by timestamp
+    watched_list = []
+    for episode in watched_episodes:
+        watched_list.append({
+            'type': 'episode',
+            'title': f"{episode.tv_show.title} - S{episode.season_number}E{episode.episode_number}",
+            'media': episode.tv_show,
+            'timestamp': episode.watched_at,
+            'episode': episode
+        })
+    
+    for movie_item in watched_movies:
+        watched_list.append({
+            'type': 'movie',
+            'title': movie_item.media.title,
+            'media': movie_item.media,
+            'timestamp': movie_item.added_at,
+            'item': movie_item
+        })
+    
+    # Sort by timestamp descending
+    watched_list.sort(key=lambda x: x['timestamp'], reverse=True)
 
     return render(request, "media/watch_history.html", {
-        "watched_episodes": watched,
+        "watched_list": watched_list,
     })
 
 

@@ -330,14 +330,14 @@ details.episode-season[open] summary {
 
                         <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Mark Episodes</h3>
                         <div style="margin-top: 1rem;">
-                            {% if tv_show and tv_show.number_of_seasons %}
-                                {% for season_num in tv_show.number_of_seasons|range %}
+                            {% if seasons_with_episodes %}
+                                {% for season_data in seasons_with_episodes %}
                                     <details class="episode-season">
-                                        <summary style="cursor: pointer; font-weight: 600;">Season {{ season_num }}</summary>
+                                        <summary style="cursor: pointer; font-weight: 600;">Season {{ season_data.season_number }}</summary>
                                         <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
-                                            {% for ep_num in 20|range %}
+                                            {% for ep_num in season_data.episode_count|range %}
                                                 {# Create episode key in format "season,episode" #}
-                                                {% with season_str=season_num|stringformat:"d" %}
+                                                {% with season_str=season_data.season_number|stringformat:"d" %}
                                                     {% with ep_str=ep_num|stringformat:"d" %}
                                                         {% with ep_key=season_str|add:","|add:ep_str %}
                                                     {% if watched_episodes_set|is_watched:ep_key %}
@@ -345,7 +345,7 @@ details.episode-season[open] summary {
                                                               action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
-                                                            <input type="hidden" name="season" value="{{ season_num }}">
+                                                            <input type="hidden" name="season" value="{{ season_data.season_number }}">
                                                             <input type="hidden" name="episode" value="{{ ep_num }}">
                                                             <button type="submit" class="btn btn-sm btn-success" style="width: 100%; padding: 0.5rem 0; font-size: 0.85rem;">
                                                                 ✓ E{{ ep_num }}
@@ -356,7 +356,7 @@ details.episode-season[open] summary {
                                                               action="{% url 'media:mark_watched' tv_show_id=media.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
-                                                            <input type="hidden" name="season" value="{{ season_num }}">
+                                                            <input type="hidden" name="season" value="{{ season_data.season_number }}">
                                                             <input type="hidden" name="episode" value="{{ ep_num }}">
                                                             <button type="submit" class="btn btn-sm" style="width: 100%; padding: 0.5rem 0; font-size: 0.85rem;">
                                                                 E{{ ep_num }}

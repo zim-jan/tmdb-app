@@ -6,36 +6,54 @@
 <div class="hero">
     <div class="container">
         <h1>Watch History</h1>
-        <p>Your recently watched episodes</p>
+        <p>Your recently watched movies and episodes</p>
     </div>
 </div>
 
 <div class="container" style="margin-top: 3rem;">
-    {% if watched_episodes %}
+    {% if watched_list %}
         <div style="max-width: 800px; margin: 0 auto;">
-            {% for episode in watched_episodes %}
+            {% for item in watched_list %}
                 <div class="card" style="margin-bottom: 1rem;">
                     <div class="card-body">
                         <div style="display: flex; justify-content: space-between; align-items: start;">
                             <div>
-                                <h3>
-                                    <a href="{% url 'media:detail' media_id=episode.tv_show.id %}" style="text-decoration: none; color: inherit;">
-                                        {{ episode.tv_show.title }}
-                                    </a>
-                                </h3>
-                                <p style="color: var(--text-muted); margin: 0.5rem 0;">
-                                    Season {{ episode.season_number }}, Episode {{ episode.episode_number }}
-                                </p>
-                                <p style="font-size: 0.9rem; color: var(--text-muted);">
-                                    Watched {{ episode.watched_at|timesince }} ago
-                                </p>
+                                {% if item.type == 'episode' %}
+                                    <h3>
+                                        <a href="{% url 'media:detail' media_id=item.media.id %}" style="text-decoration: none; color: inherit;">
+                                            {{ item.media.title }}
+                                        </a>
+                                    </h3>
+                                    <p style="color: var(--text-muted); margin: 0.5rem 0;">
+                                        Season {{ item.episode.season_number }}, Episode {{ item.episode.episode_number }}
+                                    </p>
+                                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                                        📺 Watched {{ item.timestamp|timesince }} ago
+                                    </p>
+                                {% else %}
+                                    <h3>
+                                        <a href="{% url 'media:detail' media_id=item.media.id %}" style="text-decoration: none; color: inherit;">
+                                            {{ item.media.title }}
+                                        </a>
+                                    </h3>
+                                    <p style="color: var(--text-muted); margin: 0.5rem 0;">
+                                        {% if item.media.release_date %}{{ item.media.release_date.year }}{% endif %}
+                                    </p>
+                                    <p style="font-size: 0.9rem; color: var(--text-muted);">
+                                        🎬 Marked as watched {{ item.timestamp|timesince }} ago
+                                    </p>
+                                {% endif %}
                             </div>
-                            <form method="post" action="{% url 'media:unmark_watched' tv_show_id=episode.tv_show.id %}">
+                            {% if item.type == 'episode' %}
+                            <form method="post" action="{% url 'media:unmark_watched' tv_show_id=item.media.id %}">
                                 {% csrf_token %}
-                                <input type="hidden" name="season" value="{{ episode.season_number }}">
-                                <input type="hidden" name="episode" value="{{ episode.episode_number }}">
+                                <input type="hidden" name="season" value="{{ item.episode.season_number }}">
+                                <input type="hidden" name="episode" value="{{ item.episode.episode_number }}">
                                 <button type="submit" class="btn btn-sm">Unmark</button>
                             </form>
+                            {% else %}
+                            <a href="{% url 'lists:detail' list_id=item.item.list.id %}" class="btn btn-sm" style="text-decoration: none;">View List</a>
+                            {% endif %}
                         </div>
                     </div>
                 </div>
@@ -43,8 +61,8 @@
         </div>
     {% else %}
         <div style="text-align: center; padding: 3rem; background: var(--bg-secondary); border-radius: 8px;">
-            <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't marked any episodes as watched yet.</p>
-            <a href="{% url 'media:browse' %}" class="btn btn-primary">Browse TV Shows</a>
+            <p style="color: var(--text-muted); margin-bottom: 1rem;">You haven't marked any movies or episodes as watched yet.</p>
+            <a href="{% url 'media:browse' %}" class="btn btn-primary">Browse Media</a>
         </div>
     {% endif %}
 </div>
