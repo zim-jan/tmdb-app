@@ -4,7 +4,9 @@ Views for list management.
 This module contains views for creating, editing, and managing user lists.
 """
 
+import logging
 
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -16,6 +18,7 @@ from lists.models import List, ListItem, WatchStatus
 from lists.services import ListService
 from media.models import Media
 
+logger = logging.getLogger(__name__)
 
 @login_required
 def my_lists_view(request: HttpRequest) -> HttpResponse:
@@ -129,8 +132,20 @@ def list_detail_view(request: HttpRequest, list_id: int) -> HttpResponse:
                 item_data['poster_path'] = details.get('poster_path')
                 item_data['backdrop_path'] = details.get('backdrop_path')
                 item_data['rating'] = details.get('vote_average', 0)
-            except Exception:
-                pass
+            except requests.RequestException as e:
+                logger.warning(
+                    "Failed to fetch TMDb data for media_id=%s: %s",
+                    item.media.id,
+                    str(e),
+                    extra={'media_id': item.media.id, 'tmdb_id': item.media.tmdb_id}
+                )
+            except Exception as e:
+                logger.error(
+                    "Unexpected error fetching TMDb data for media_id=%s",
+                    item.media.id,
+                    exc_info=True,
+                    extra={'media_id': item.media.id, 'tmdb_id': item.media.tmdb_id}
+                )
 
         enriched_items.append(item_data)
 

@@ -4,11 +4,14 @@ TMDb API integration service.
 This module provides service layer for interacting with The Movie Database API.
 """
 
+import logging
 from typing import Any
 
 import requests
 from django.conf import settings
 from django.core.cache import cache
+
+logger = logging.getLogger(__name__)
 
 
 class TMDbService:
@@ -282,8 +285,23 @@ class TMDbService:
             elif backdrops:
                 result["backdrop_path"] = backdrops[0].get("file_path")
 
-        except Exception:
+        except requests.RequestException as e:
+            logger.warning(
+                "Failed to enrich search result for %s %s: %s",
+                media_type,
+                tmdb_id,
+                str(e),
+                extra={'tmdb_id': tmdb_id, 'media_type': media_type}
+            )
             # If enrichment fails, continue with basic data
-            pass
+        except Exception as e:
+            logger.error(
+                "Unexpected error enriching search result for %s %s",
+                media_type,
+                tmdb_id,
+                exc_info=True,
+                extra={'tmdb_id': tmdb_id, 'media_type': media_type}
+            )
+            # If enrichment fails, continue with basic data
 
         return result
