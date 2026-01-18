@@ -40,6 +40,13 @@ class TMDbService:
         self.timeout = settings.TMDB_TIMEOUT
         self.cache_timeout = settings.TMDB_CACHE_TIMEOUT
 
+        # Validate API key is configured
+        if not self.api_key:
+            logger.warning(
+                "TMDB_API_KEY is not configured. "
+                "Get your API key at https://www.themoviedb.org/settings/api"
+            )
+
     def _get_cache_key(self, endpoint: str, params: dict[str, Any] | None) -> str:
         """
         Generate a cache key for API request.
@@ -86,6 +93,13 @@ class TMDbService:
         """
         if params is None:
             params = {}
+
+        # Validate API key before making request
+        if not self.api_key:
+            raise ValueError(
+                "TMDB_API_KEY is not configured. "
+                "Get your API key at https://www.themoviedb.org/settings/api"
+            )
 
         # Check cache first
         if use_cache:
