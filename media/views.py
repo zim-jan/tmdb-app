@@ -77,24 +77,17 @@ def browse_view(request: HttpRequest) -> HttpResponse:
     media_type = request.GET.get("type", "all")
     sort_by = request.GET.get("sort", "-added_at")
 
-    # Get media from user's lists
-    media_list = ListItem.objects.filter(
-        list__user=request.user
-    ).select_related('media').values_list('media', flat=True).distinct()
+    # Get media from user's lists using single query with Exists subquery
+    # This replaces the inefficient values_list + distinct + id__in pattern
+    media_list = Media.objects.filter(
+        list_items__list__user=request.user
+    ).distinct()
     
     # Apply media type filter
     if media_type == "movie":
-        media_list = Media.objects.filter(
-            id__in=media_list,
-            media_type="MOVIE"
-        )
+        media_list = media_list.filter(media_type="MOVIE")
     elif media_type == "tv":
-        media_list = Media.objects.filter(
-            id__in=media_list,
-            media_type="TV_SHOW"
-        )
-    else:
-        media_list = Media.objects.filter(id__in=media_list)
+        media_list = media_list.filter(media_type="TV_SHOW")
     
     # Apply sorting
     if sort_by == "title":
