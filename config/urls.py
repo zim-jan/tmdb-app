@@ -31,4 +31,7 @@ urlpatterns = [
 ]
 
 # Custom error handlers
+handler400 = "core.views.custom_400"
+handler403 = "core.views.custom_403"
 handler404 = "core.views.custom_404"
+handler500 = "core.views.custom_500"

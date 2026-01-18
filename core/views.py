@@ -63,3 +63,57 @@ def custom_404(request: HttpRequest, exception: Exception) -> HttpResponse:
         Rendered 404 page with 404 status code.
     """
     return render(request, "404.html", status=404)
+
+def custom_500(request: HttpRequest) -> HttpResponse:
+    """
+    Custom 500 error handler.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered 500 page with 500 status code.
+    """
+    return render(request, "500.html", status=500)
+
+
+def custom_403(request: HttpRequest, exception: Exception) -> HttpResponse:
+    """
+    Custom 403 error handler.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+    exception : Exception
+        The exception that triggered the 403 error.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered 403 page with 403 status code.
+    """
+    return render(request, "403.html", status=403)
+
+
+def custom_400(request: HttpRequest, exception: Exception) -> HttpResponse:
+    """
+    Custom 400 error handler.
+
+    Parameters
+    ----------
+    request : HttpRequest
+        The HTTP request object.
+    exception : Exception
+        The exception that triggered the 400 error.
+
+    Returns
+    -------
+    HttpResponse
+        Rendered 400 page with 400 status code.
+    """
+    return render(request, "400.html", status=400)
