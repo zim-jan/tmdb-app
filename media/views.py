@@ -18,6 +18,42 @@ from media.models import Media, TVShow, WatchedEpisode
 from media.services import EpisodeTrackingService, MediaService, TMDbService
 
 
+def validate_episode_numbers(season: str | None, episode: str | None) -> tuple[int, int] | None:
+    """
+    Validate and convert season/episode numbers to integers.
+
+    Parameters
+    ----------
+    season : str | None
+        Season number as string.
+    episode : str | None
+        Episode number as string.
+
+    Returns
+    -------
+    tuple[int, int] | None
+        Tuple of (season, episode) as integers, or None if invalid.
+    """
+    if not season or not episode:
+        return None
+
+    try:
+        season_num = int(season)
+        episode_num = int(episode)
+
+        # Validate ranges
+        if season_num <= 0 or episode_num <= 0:
+            return None
+
+        # Reasonable upper limits
+        if season_num > 1000 or episode_num > 1000:
+            return None
+
+        return season_num, episode_num
+    except (ValueError, TypeError):
+        return None
+
+
 @login_required
 def browse_view(request: HttpRequest) -> HttpResponse:
     """
@@ -343,19 +379,23 @@ def mark_episode_watched_view(request: HttpRequest, tv_show_id: int) -> HttpResp
     season = request.POST.get("season")
     episode = request.POST.get("episode")
 
-    if not season or not episode:
-        messages.error(request, "Season and episode numbers required")
+    # Validate episode numbers
+    result = validate_episode_numbers(season, episode)
+    if result is None:
+        messages.error(request, "Invalid season or episode numbers. Must be positive integers.")
         return redirect("media:detail", media_id=tv_show_id)
+
+    season_num, episode_num = result
 
     tracking_service = EpisodeTrackingService()
     try:
         tracking_service.mark_episode_watched(
             user=request.user,
             tv_show=tv_show,
-            season_number=int(season),
-            episode_number=int(episode),
+            season_number=season_num,
+            episode_number=episode_num,
         )
-        messages.success(request, f"Marked {tv_show.title} S{season}E{episode} as watched")
+        messages.success(request, f"Marked {tv_show.title} S{season_num}E{episode_num} as watched")
     except Exception as e:
         messages.error(request, f"Error: {str(e)}")
 
@@ -384,19 +424,23 @@ def unmark_episode_watched_view(request: HttpRequest, tv_show_id: int) -> HttpRe
     season = request.POST.get("season")
     episode = request.POST.get("episode")
 
-    if not season or not episode:
-        messages.error(request, "Season and episode numbers required")
+    # Validate episode numbers
+    result = validate_episode_numbers(season, episode)
+    if result is None:
+        messages.error(request, "Invalid season or episode numbers. Must be positive integers.")
         return redirect("media:detail", media_id=tv_show_id)
+
+    season_num, episode_num = result
 
     tracking_service = EpisodeTrackingService()
     try:
         tracking_service.unmark_episode_watched(
             user=request.user,
             tv_show=tv_show,
-            season_number=int(season),
-            episode_number=int(episode),
+            season_number=season_num,
+            episode_number=episode_num,
         )
-        messages.success(request, f"Unmarked {tv_show.title} S{season}E{episode}")
+        messages.success(request, f"Unmarked {tv_show.title} S{season_num}E{episode_num}")
     except Exception as e:
         messages.error(request, f"Error: {str(e)}")
 
