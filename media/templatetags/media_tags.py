@@ -12,7 +12,6 @@ _builtin_range = range
 register = template.Library()
 
 
-@register.filter
 def range_filter(value):
     """
     Generate a range of numbers from 1 to value.

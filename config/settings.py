@@ -31,7 +31,7 @@ SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-m^d@*ydm)@k3m__i))r0o@5b^s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,*.herokuapp.com").split(",")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,*.herokuapp.com,'imdb-app-68dee9e3110c.herokuapp.com'").split(",")
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://*.herokuapp.com").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else ["https://*.herokuapp.com"]
 
 
@@ -153,15 +153,15 @@ TMDB_BASE_URL = os.getenv("TMDB_BASE_URL", "https://api.themoviedb.org/3")
 
 # Security settings
 # Wyłącz SSL redirect dla localhost/127.0.0.1 (serwer deweloperski nie obsługuje HTTPS)
-LOCALHOST_ONLY = all(host in ['localhost', '127.0.0.1'] for host in ALLOWED_HOSTS)
-SECURE_SSL_REDIRECT = not DEBUG and not LOCALHOST_ONLY
-SESSION_COOKIE_SECURE = not DEBUG and not LOCALHOST_ONLY
-CSRF_COOKIE_SECURE = not DEBUG and not LOCALHOST_ONLY
+# W dev mode, zawsze wyłącz SSL redirect
+SECURE_SSL_REDIRECT = False if DEBUG else True
+SESSION_COOKIE_SECURE = False if DEBUG else True
+CSRF_COOKIE_SECURE = False if DEBUG else True
 SECURE_BROWSER_XSS_FILTER = True
 SECURE_CONTENT_TYPE_NOSNIFF = True
-SECURE_HSTS_SECONDS = 31536000 if (not DEBUG and not LOCALHOST_ONLY) else 0
-SECURE_HSTS_INCLUDE_SUBDOMAINS = not DEBUG and not LOCALHOST_ONLY
-SECURE_HSTS_PRELOAD = not DEBUG and not LOCALHOST_ONLY
+SECURE_HSTS_SECONDS = 0 if DEBUG else 31536000
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False if DEBUG else True
+SECURE_HSTS_PRELOAD = False if DEBUG else True
 
 # Proxy SSL header (needed behind reverse proxies)
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

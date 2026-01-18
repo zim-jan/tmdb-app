@@ -5,6 +5,18 @@
 
 {% block extra_css %}
 <style>
+details.episode-season {
+    margin-bottom: 1rem;
+    background: var(--bg-secondary);
+    padding: 1rem;
+    border-radius: 8px;
+}
+
+details.episode-season[open] summary {
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
 .media-detail-header {
     position: relative;
     height: 700px;
@@ -305,30 +317,31 @@
                         <div style="margin-top: 1rem;">
                             {% if media.tvshow.number_of_seasons %}
                                 {% for season_num in media.tvshow.number_of_seasons|range %}
-                                    <details style="margin-bottom: 1rem; background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
+                                    <details class="episode-season" style="display: none;">
                                         <summary style="cursor: pointer; font-weight: 600;">Season {{ season_num }}</summary>
                                         <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
                                             {% for ep_num in 20|range %}
-                                                {% with ep_key=season_num|stringformat:"d"|add:","|add:ep_num|stringformat:"s" %}
+                                                {# Create episode key in format "season,episode" #}
+                                                {% with season_str=season_num|stringformat:"d" ep_str=ep_num|stringformat:"d" ep_key=season_str|add:","|add:ep_str %}
                                                     {% if watched_episodes_set|is_watched:ep_key %}
                                                         <form method="post" 
-                                                              action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
+                                                              action="{% url 'media:unmark_watched' tv_show_id=media.tvshow.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="season" value="{{ season_num }}">
                                                             <input type="hidden" name="episode" value="{{ ep_num }}">
-                                                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">
+                                                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%; padding: 0.5rem 0; font-size: 0.85rem;">
                                                                 ✓ E{{ ep_num }}
                                                             </button>
                                                         </form>
                                                     {% else %}
                                                         <form method="post" 
-                                                              action="{% url 'media:mark_watched' tv_show_id=media.id %}"
+                                                              action="{% url 'media:mark_watched' tv_show_id=media.tvshow.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="season" value="{{ season_num }}">
                                                             <input type="hidden" name="episode" value="{{ ep_num }}">
-                                                            <button type="submit" class="btn btn-sm" style="width: 100%;">
+                                                            <button type="submit" class="btn btn-sm" style="width: 100%; padding: 0.5rem 0; font-size: 0.85rem;">
                                                                 E{{ ep_num }}
                                                             </button>
                                                         </form>
@@ -394,4 +407,56 @@
         </div>
     </div>
 </div>
+
+<script>
+(function() {
+    const SCROLL_KEY = `media-detail-scroll-${window.location.pathname}`;
+    const OPEN_SEASONS_KEY = `media-detail-open-seasons-${window.location.pathname}`;
+
+    // Zapamiętaj scroll position i stany details przed przeładowaniem
+    window.addEventListener('beforeunload', () => {
+        // Zapisz scroll position
+        sessionStorage.setItem(SCROLL_KEY, window.scrollY);
+
+        // Zapisz które sezony są otwarte
+        const openSeasons = Array.from(document.querySelectorAll('details.episode-season[open]'))
+            .map(el => el.querySelector('summary').textContent.trim());
+        sessionStorage.setItem(OPEN_SEASONS_KEY, JSON.stringify(openSeasons));
+    });
+
+    // Przywróć scroll position i stany details po załadowaniu
+    window.addEventListener('load', () => {
+        // Przywróć scroll position
+        const savedScroll = sessionStorage.getItem(SCROLL_KEY);
+        if (savedScroll) {
+            window.scrollTo(0, parseInt(savedScroll, 10));
+            sessionStorage.removeItem(SCROLL_KEY);
+        }
+
+        // Wszystkie details powinny być collapsed (domyślnie są)
+        // Jeśli chcesz aby jakieś były otwarte, musisz je otworzyć tutaj:
+        // const openSeasons = JSON.parse(sessionStorage.getItem(OPEN_SEASONS_KEY) || '[]');
+        // if (openSeasons.length > 0) {
+        //     document.querySelectorAll('details.episode-season summary').forEach(summary => {
+        //         if (openSeasons.includes(summary.textContent.trim())) {
+        //             summary.closest('details').open = true;
+        //         }
+        //     });
+        // }
+        // sessionStorage.removeItem(OPEN_SEASONS_KEY);
+    });
+
+    // Dodaj auto-refresh dla updated progressu (opcjonalnie)
+    // Po 2 sekundach od submita, odśwież dane
+    const forms = document.querySelectorAll('form[action*="mark-watched"], form[action*="unmark-watched"]');
+    forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+            const button = form.querySelector('button[type="submit"]');
+            const originalText = button.textContent;
+            button.disabled = true;
+            button.textContent = '⏳...';
+        });
+    });
+})();
+</script>
 {% endblock %}
