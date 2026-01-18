@@ -536,7 +536,7 @@ def add_manual_media_view(request: HttpRequest) -> HttpResponse:
         form = ManualMediaForm(request.POST)
         if form.is_valid():
             media = form.save()
-            messages.success(request, f"Dodano '{media.title}' do bazy danych!")
+            messages.success(request, f"Added '{media.title}' to database!")
 
             # If list_id is provided, add to that list
             list_id = request.POST.get("list_id")
@@ -545,14 +545,14 @@ def add_manual_media_view(request: HttpRequest) -> HttpResponse:
                     list_obj = List.objects.get(id=list_id, user=request.user)
                     list_service = ListService()
                     list_service.add_media_to_list(list_obj, media)
-                    messages.success(request, f"Dodano do listy '{list_obj.name}'")
+                    messages.success(request, f"Added to list '{list_obj.name}'")
                     return redirect("lists:detail", list_id=list_id)
                 except List.DoesNotExist:
                     pass
 
             return redirect("media:detail", media_id=media.id)
         else:
-            messages.error(request, "Błąd w formularzu. Sprawdź wprowadzone dane.")
+            messages.error(request, "Form error. Please check the entered data.")
     else:
         form = ManualMediaForm()
 

@@ -183,8 +183,8 @@ if os.getenv("REDIS_URL"):
     }
 
 # Security settings
-# Wyłącz SSL redirect dla localhost/127.0.0.1 (serwer deweloperski nie obsługuje HTTPS)
-# W dev mode, zawsze wyłącz SSL redirect
+# Disable SSL redirect for localhost/127.0.0.1 (development server doesn't support HTTPS)
+# In dev mode, always disable SSL redirect
 SECURE_SSL_REDIRECT = False if DEBUG else True
 SESSION_COOKIE_SECURE = False if DEBUG else True
 CSRF_COOKIE_SECURE = False if DEBUG else True

@@ -34,7 +34,7 @@ class ManualMediaForm(forms.ModelForm):
             "title": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Wprowadź tytuł filmu lub serialu",
+                    "placeholder": "Enter movie or TV series title",
                 }
             ),
             "media_type": forms.Select(
@@ -44,13 +44,13 @@ class ManualMediaForm(forms.ModelForm):
             "original_title": forms.TextInput(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Tytuł oryginalny (opcjonalnie)",
+                    "placeholder": "Original title (optional)",
                 }
             ),
             "overview": forms.Textarea(
                 attrs={
                     "class": "form-control",
-                    "placeholder": "Opis (opcjonalnie)",
+                    "placeholder": "Description (optional)",
                     "rows": 4,
                 }
             ),
@@ -58,7 +58,7 @@ class ManualMediaForm(forms.ModelForm):
                 attrs={
                     "class": "form-control",
                     "type": "date",
-                    "placeholder": "Data premiery (opcjonalnie)",
+                    "placeholder": "Release date (optional)",
                 }
             ),
         }
