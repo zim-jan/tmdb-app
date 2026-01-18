@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Login - TMDb App{% endblock %}
+{% block title %}Sign In - TMDb App{% endblock %}
 
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
             <h1>Welcome Back</h1>
-            <p>Sign in to continue tracking your movies and shows</p>
+            <p>Sign in to your account and start tracking your favorite movies and shows</p>
         </div>
         
-        <form method="post" class="auth-form">
+        <form method="post" class="auth-form" novalidate>
             {% csrf_token %}
             
             {% if form.non_field_errors %}
             <div class="form-errors">
-                {{ form.non_field_errors }}
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
             </div>
             {% endif %}
             
@@ -26,7 +28,9 @@
                 {{ form.username }}
                 {% if form.username.errors %}
                 <div class="field-errors">
-                    {{ form.username.errors }}
+                    {% for error in form.username.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
@@ -38,7 +42,9 @@
                 {{ form.password }}
                 {% if form.password.errors %}
                 <div class="field-errors">
-                    {{ form.password.errors }}
+                    {% for error in form.password.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
             </div>
@@ -47,7 +53,7 @@
         </form>
         
         <div class="auth-footer">
-            <p>Don't have an account? <a href="{% url 'users:register' %}" class="auth-link">Sign up</a></p>
+            <p>Don't have an account? <a href="{% url 'users:register' %}" class="auth-link">Sign up here</a></p>
         </div>
     </div>
 </div>

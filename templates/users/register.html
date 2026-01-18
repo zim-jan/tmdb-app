@@ -1,21 +1,23 @@
 {% extends "base.html" %}
 
-{% block title %}Register - TMDb App{% endblock %}
+{% block title %}Create Account - TMDb App{% endblock %}
 
 {% block content %}
 <div class="auth-container">
     <div class="auth-card">
         <div class="auth-header">
             <h1>Create Account</h1>
-            <p>Start tracking your favorite movies and TV shows</p>
+            <p>Join thousands of users tracking their favorite movies and TV shows</p>
         </div>
         
-        <form method="post" class="auth-form">
+        <form method="post" class="auth-form" novalidate>
             {% csrf_token %}
             
             {% if form.non_field_errors %}
             <div class="form-errors">
-                {{ form.non_field_errors }}
+                {% for error in form.non_field_errors %}
+                    <div>{{ error }}</div>
+                {% endfor %}
             </div>
             {% endif %}
             
@@ -26,11 +28,13 @@
                 {{ form.username }}
                 {% if form.username.errors %}
                 <div class="field-errors">
-                    {{ form.username.errors }}
+                    {% for error in form.username.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 {% if form.username.help_text %}
-                <div class="field-help">{{ form.username.help_text }}</div>
+                <div class="field-help">{{ form.username.help_text|safe }}</div>
                 {% endif %}
             </div>
             
@@ -41,11 +45,13 @@
                 {{ form.email }}
                 {% if form.email.errors %}
                 <div class="field-errors">
-                    {{ form.email.errors }}
+                    {% for error in form.email.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 {% if form.email.help_text %}
-                <div class="field-help">{{ form.email.help_text }}</div>
+                <div class="field-help">{{ form.email.help_text|safe }}</div>
                 {% endif %}
             </div>
             
@@ -56,11 +62,13 @@
                 {{ form.nickname }}
                 {% if form.nickname.errors %}
                 <div class="field-errors">
-                    {{ form.nickname.errors }}
+                    {% for error in form.nickname.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 {% if form.nickname.help_text %}
-                <div class="field-help">{{ form.nickname.help_text }}</div>
+                <div class="field-help">{{ form.nickname.help_text|safe }}</div>
                 {% endif %}
             </div>
             
@@ -71,11 +79,13 @@
                 {{ form.password1 }}
                 {% if form.password1.errors %}
                 <div class="field-errors">
-                    {{ form.password1.errors }}
+                    {% for error in form.password1.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 {% if form.password1.help_text %}
-                <div class="field-help">{{ form.password1.help_text }}</div>
+                <div class="field-help">{{ form.password1.help_text|safe }}</div>
                 {% endif %}
             </div>
             
@@ -86,11 +96,13 @@
                 {{ form.password2 }}
                 {% if form.password2.errors %}
                 <div class="field-errors">
-                    {{ form.password2.errors }}
+                    {% for error in form.password2.errors %}
+                        <div>{{ error }}</div>
+                    {% endfor %}
                 </div>
                 {% endif %}
                 {% if form.password2.help_text %}
-                <div class="field-help">{{ form.password2.help_text }}</div>
+                <div class="field-help">{{ form.password2.help_text|safe }}</div>
                 {% endif %}
             </div>
             
@@ -98,7 +110,7 @@
         </form>
         
         <div class="auth-footer">
-            <p>Already have an account? <a href="{% url 'users:login' %}" class="auth-link">Sign in</a></p>
+            <p>Already have an account? <a href="{% url 'users:login' %}" class="auth-link">Sign in here</a></p>
         </div>
     </div>
 </div>

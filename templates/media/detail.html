@@ -308,33 +308,32 @@
                                     <details style="margin-bottom: 1rem; background: var(--bg-secondary); padding: 1rem; border-radius: 8px;">
                                         <summary style="cursor: pointer; font-weight: 600;">Season {{ season_num }}</summary>
                                         <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
-                                            {% comment %}Note: Using a fixed number of episodes per season (20) as a fallback{% endcomment %}
                                             {% for ep_num in 20|range %}
-                                                {% if watched_episodes_set|is_watched:season_num|add:","|add:ep_num %}
-                                                    {% comment %}Episode is watched{% endcomment %}
-                                                    <form method="post" 
-                                                          action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
-                                                          style="display: inline;">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="season" value="{{ season_num }}">
-                                                        <input type="hidden" name="episode" value="{{ ep_num }}">
-                                                        <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">
-                                                            ✓ E{{ ep_num }}
-                                                        </button>
-                                                    </form>
-                                                {% else %}
-                                                    {% comment %}Episode not watched{% endcomment %}
-                                                    <form method="post" 
-                                                          action="{% url 'media:mark_watched' tv_show_id=media.id %}"
-                                                          style="display: inline;">
-                                                        {% csrf_token %}
-                                                        <input type="hidden" name="season" value="{{ season_num }}">
-                                                        <input type="hidden" name="episode" value="{{ ep_num }}">
-                                                        <button type="submit" class="btn btn-sm" style="width: 100%;">
-                                                            E{{ ep_num }}
-                                                        </button>
-                                                    </form>
-                                                {% endif %}
+                                                {% with ep_key=season_num|stringformat:"d"|add:","|add:ep_num|stringformat:"s" %}
+                                                    {% if watched_episodes_set|is_watched:ep_key %}
+                                                        <form method="post" 
+                                                              action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
+                                                              style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="season" value="{{ season_num }}">
+                                                            <input type="hidden" name="episode" value="{{ ep_num }}">
+                                                            <button type="submit" class="btn btn-sm btn-success" style="width: 100%;">
+                                                                ✓ E{{ ep_num }}
+                                                            </button>
+                                                        </form>
+                                                    {% else %}
+                                                        <form method="post" 
+                                                              action="{% url 'media:mark_watched' tv_show_id=media.id %}"
+                                                              style="display: inline;">
+                                                            {% csrf_token %}
+                                                            <input type="hidden" name="season" value="{{ season_num }}">
+                                                            <input type="hidden" name="episode" value="{{ ep_num }}">
+                                                            <button type="submit" class="btn btn-sm" style="width: 100%;">
+                                                                E{{ ep_num }}
+                                                            </button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% endwith %}
                                             {% endfor %}
                                         </div>
                                     </details>

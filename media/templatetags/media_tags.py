@@ -6,11 +6,14 @@ This module provides custom template tags and filters.
 
 from django import template
 
+# Store the built-in range function before we shadow it with our filter
+_builtin_range = range
+
 register = template.Library()
 
 
 @register.filter
-def range(value):
+def range_filter(value):
     """
     Generate a range of numbers from 1 to value.
 
@@ -31,6 +34,10 @@ def range(value):
     {% endfor %}
     """
     try:
-        return range(1, int(value) + 1)
+        return _builtin_range(1, int(value) + 1)
     except (ValueError, TypeError):
-        return range(0)
+        return _builtin_range(0)
+
+
+# Register with the original name "range" for template use
+register.filter("range", range_filter)
