@@ -11,7 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from lists.models import List, ListItem
+from lists.models import List, ListItem, WatchStatus
 from lists.services import ListService
 from media.forms import ManualMediaForm
 from media.models import Media, TVShow, WatchedEpisode
@@ -433,15 +433,13 @@ def watch_history_view(request: HttpRequest) -> HttpResponse:
     HttpResponse
         Rendered watch history page.
     """
-    from lists.models import WatchStatus
-    
     # Get watched episodes
     watched_episodes = WatchedEpisode.objects.filter(user=request.user).select_related("tv_show").order_by("-watched_at")[:50]
     
     # Get watched movies from lists
     watched_movies = ListItem.objects.filter(
         list__user=request.user,
-        status=WatchStatus.WATCHED,
+        status=WatchStatus.WATCHED.value,
         media__media_type="MOVIE"
     ).select_related("media").order_by("-added_at")[:50]
     
