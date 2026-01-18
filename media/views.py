@@ -69,10 +69,9 @@ def browse_view(request: HttpRequest) -> HttpResponse:
     
     media_list = media_list[:50]
 
-    # Enrich media with TMDb data
-    tmdb_service = TMDbService()
+    # Enrich media using data already in database
+    # (poster_path, backdrop_path, vote_average are synced from TMDb)
     enriched_media = []
-
     for media in media_list:
         media_dict = {
             'id': media.id,
@@ -81,24 +80,10 @@ def browse_view(request: HttpRequest) -> HttpResponse:
             'media_type': media.media_type.lower().replace('_show', ''),
             'overview': media.overview or '',
             'release_date': media.release_date,
-            'poster_path': None,
-            'backdrop_path': None,
-            'rating': 0,
+            'poster_path': media.poster_path or None,
+            'backdrop_path': media.backdrop_path or None,
+            'rating': media.vote_average or 0,
         }
-
-        # Try to get additional data from TMDb (only if tmdb_id exists)
-        if media.tmdb_id:
-            try:
-                details = tmdb_service.get_movie_details(media.tmdb_id) if media.media_type == 'MOVIE' else tmdb_service.get_tv_details(media.tmdb_id)
-
-                media_dict['poster_path'] = details.get('poster_path')
-                media_dict['backdrop_path'] = details.get('backdrop_path')
-                media_dict['rating'] = details.get('vote_average', 0)
-                if not media_dict['overview']:
-                    media_dict['overview'] = details.get('overview', '')
-            except Exception:
-                pass  # Use basic data if TMDb fails
-
         enriched_media.append(media_dict)
 
     # Get user's lists for the dropdown
