@@ -10,7 +10,6 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import logging.handlers
 import os
 from pathlib import Path
 
@@ -62,8 +61,15 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = parse_comma_separated("ALLOWED_HOSTS", "localhost,127.0.0.1,*.herokuapp.com,imdb-app-68dee9e3110c.herokuapp.com")
-CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in parse_comma_separated("CSRF_TRUSTED_ORIGINS", "*.herokuapp.com")]
+# Parse allowed hosts from environment or use defaults
+ALLOWED_HOSTS = parse_comma_separated(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1,*.herokuapp.com,imdb-app-68dee9e3110c.herokuapp.com",
+)
+CSRF_TRUSTED_ORIGINS = [
+    f"https://{host}"
+    for host in parse_comma_separated("CSRF_TRUSTED_ORIGINS", "*.herokuapp.com")
+]
 
 
 # Application definition
