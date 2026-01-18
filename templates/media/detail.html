@@ -322,7 +322,9 @@ details.episode-season[open] summary {
                                         <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
                                             {% for ep_num in 20|range %}
                                                 {# Create episode key in format "season,episode" #}
-                                                {% with season_str=season_num|stringformat:"d" ep_str=ep_num|stringformat:"d" ep_key=season_str|add:","|add:ep_str %}
+                                                {% with season_str=season_num|stringformat:"d" %}
+                                                    {% with ep_str=ep_num|stringformat:"d" %}
+                                                        {% with ep_key=season_str|add:","|add:ep_str %}
                                                     {% if watched_episodes_set|is_watched:ep_key %}
                                                         <form method="post" 
                                                               action="{% url 'media:unmark_watched' tv_show_id=media.tvshow.id %}"
@@ -346,6 +348,8 @@ details.episode-season[open] summary {
                                                             </button>
                                                         </form>
                                                     {% endif %}
+                                                        {% endwith %}
+                                                    {% endwith %}
                                                 {% endwith %}
                                             {% endfor %}
                                         </div>
