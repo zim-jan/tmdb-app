@@ -5,6 +5,9 @@ Views for media browsing and management.
 This module contains views for searching and adding media to lists.
 """
 
+import logging
+
+import requests
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
@@ -16,6 +19,8 @@ from lists.services import ListService
 from media.forms import ManualMediaForm
 from media.models import Media, TVShow, WatchedEpisode
 from media.services import EpisodeTrackingService, MediaService, TMDbService
+
+logger = logging.getLogger(__name__)
 
 
 def validate_episode_numbers(season: str | None, episode: str | None) -> tuple[int, int] | None:
@@ -239,9 +244,21 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
                 directors = [person['name'] for person in crew if person.get('job') == 'Director'][:3]
 
             tmdb_data = details
-        except Exception:
-            import traceback
-            traceback.print_exc()
+        except requests.RequestException as e:
+            logger.warning(
+                "Failed to fetch TMDb details for media_id=%s: %s",
+                media.id,
+                str(e),
+                extra={'media_id': media.id, 'tmdb_id': media.tmdb_id}
+            )
+            pass  # Use basic data if TMDb fails
+        except Exception as e:
+            logger.error(
+                "Unexpected error fetching TMDb details for media_id=%s",
+                media.id,
+                exc_info=True,
+                extra={'media_id': media.id, 'tmdb_id': media.tmdb_id}
+            )
             pass  # Use basic data if TMDb fails
 
     # Check if it's a TV show and get watch progress
