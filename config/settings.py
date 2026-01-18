@@ -26,6 +26,27 @@ load_dotenv(BASE_DIR / ".env")
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
+
+def parse_comma_separated(env_var: str, default: str = "") -> list[str]:
+    """
+    Parse comma-separated environment variable into list.
+
+    Parameters
+    ----------
+    env_var : str
+        Environment variable name to parse.
+    default : str
+        Default value if env var not set.
+
+    Returns
+    -------
+    list[str]
+        List of stripped values, excluding empty strings.
+    """
+    value = os.getenv(env_var, default)
+    return [item.strip() for item in value.split(",") if item.strip()]
+
+
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY")
 if not SECRET_KEY:
@@ -41,8 +62,8 @@ if not SECRET_KEY:
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv("DEBUG", "True") == "True"
 
-ALLOWED_HOSTS = [host.strip() for host in os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,*.herokuapp.com,imdb-app-68dee9e3110c.herokuapp.com").split(",")]
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "https://*.herokuapp.com").split(",") if os.getenv("CSRF_TRUSTED_ORIGINS") else ["https://*.herokuapp.com"]
+ALLOWED_HOSTS = parse_comma_separated("ALLOWED_HOSTS", "localhost,127.0.0.1,*.herokuapp.com,imdb-app-68dee9e3110c.herokuapp.com")
+CSRF_TRUSTED_ORIGINS = [f"https://{host}" for host in parse_comma_separated("CSRF_TRUSTED_ORIGINS", "*.herokuapp.com")]
 
 
 # Application definition
