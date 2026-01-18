@@ -8,6 +8,7 @@ from typing import Any
 
 import requests
 from django.conf import settings
+from django.core.cache import cache
 
 
 class TMDbService:
@@ -15,7 +16,7 @@ class TMDbService:
     Service for interacting with The Movie Database (TMDb) API.
 
     This service handles all communication with TMDb API for fetching
-    movie and TV show metadata.
+    movie and TV show metadata with caching support.
 
     Attributes
     ----------
@@ -23,16 +24,43 @@ class TMDbService:
         TMDb API key from settings.
     base_url : str
         Base URL for TMDb API.
+    timeout : int
+        Request timeout in seconds.
+    cache_timeout : int
+        Cache timeout in seconds.
     """
 
     def __init__(self) -> None:
         """Initialize TMDb service with API credentials."""
         self.api_key = settings.TMDB_API_KEY
         self.base_url = settings.TMDB_BASE_URL
+        self.timeout = settings.TMDB_TIMEOUT
+        self.cache_timeout = settings.TMDB_CACHE_TIMEOUT
 
-    def _make_request(self, endpoint: str, params: dict[str, Any] | None = None) -> dict[str, Any]:
+    def _get_cache_key(self, endpoint: str, params: dict[str, Any] | None) -> str:
         """
-        Make a request to TMDb API.
+        Generate a cache key for API request.
+
+        Parameters
+        ----------
+        endpoint : str
+            API endpoint.
+        params : dict[str, Any] | None
+            Query parameters.
+
+        Returns
+        -------
+        str
+            Cache key.
+        """
+        # Exclude api_key from cache key for security
+        params_copy = {k: v for k, v in (params or {}).items() if k != "api_key"}
+        params_str = "|".join(f"{k}={v}" for k, v in sorted(params_copy.items()))
+        return f"tmdb:{endpoint}:{params_str}"
+
+    def _make_request(self, endpoint: str, params: dict[str, Any] | None = None, use_cache: bool = True) -> dict[str, Any]:
+        """
+        Make a request to TMDb API with optional caching.
 
         Parameters
         ----------
@@ -40,6 +68,8 @@ class TMDbService:
             API endpoint to call.
         params : dict[str, Any] | None
             Query parameters for the request.
+        use_cache : bool
+            Whether to use cached results (default: True).
 
         Returns
         -------
@@ -54,13 +84,27 @@ class TMDbService:
         if params is None:
             params = {}
 
+        # Check cache first
+        if use_cache:
+            cache_key = self._get_cache_key(endpoint, params)
+            cached_result = cache.get(cache_key)
+            if cached_result is not None:
+                return cached_result
+
         params["api_key"] = self.api_key
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
 
-        response = requests.get(url, params=params, timeout=10)
+        response = requests.get(url, params=params, timeout=self.timeout)
         response.raise_for_status()
 
-        return response.json()
+        result = response.json()
+
+        # Cache successful response
+        if use_cache:
+            cache_key = self._get_cache_key(endpoint, {k: v for k, v in params.items() if k != "api_key"})
+            cache.set(cache_key, result, self.cache_timeout)
+
+        return result
 
     def search_movie(self, query: str) -> list[dict[str, Any]]:
         """

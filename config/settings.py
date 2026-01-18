@@ -159,6 +159,28 @@ AUTH_USER_MODEL = "users.User"
 # TMDb API Configuration
 TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
 TMDB_BASE_URL = os.getenv("TMDB_BASE_URL", "https://api.themoviedb.org/3")
+TMDB_TIMEOUT = int(os.getenv("TMDB_TIMEOUT", "10"))  # Request timeout in seconds
+TMDB_CACHE_TIMEOUT = int(os.getenv("TMDB_CACHE_TIMEOUT", "86400"))  # Cache timeout: 24 hours
+
+# Caching configuration
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'imdb-app-cache',
+        'TIMEOUT': 300,  # 5 minutes default timeout
+    }
+}
+
+# Override cache with Redis if available (production)
+if os.getenv("REDIS_URL"):
+    CACHES['default'] = {
+        'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+        'LOCATION': os.getenv("REDIS_URL"),
+        'TIMEOUT': 300,
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
 
 # Security settings
 # Wyłącz SSL redirect dla localhost/127.0.0.1 (serwer deweloperski nie obsługuje HTTPS)
