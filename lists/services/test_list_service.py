@@ -6,7 +6,6 @@ This module tests the list management service layer functionality.
 
 import pytest
 from django.contrib.auth import get_user_model
-from django.db.models import Max
 
 from lists.models import List, ListItem
 from lists.services.list_service import ListService
@@ -77,7 +76,7 @@ class TestListServiceCreate:
         """
         # Act
         list_obj = list_service.create_list(user, "My Favorites")
-        
+
         # Assert
         assert list_obj.id is not None
         assert list_obj.name == "My Favorites"
@@ -94,7 +93,7 @@ class TestListServiceCreate:
         """
         # Act
         list_obj = list_service.create_list(user, "Watch Later", is_public=True)
-        
+
         # Assert
         assert list_obj.id is not None
         assert list_obj.name == "Watch Later"
@@ -112,7 +111,7 @@ class TestListServiceCreate:
         list1 = list_service.create_list(user, "Favorites")
         list2 = list_service.create_list(user, "Watch Later")
         list3 = list_service.create_list(user, "Archive")
-        
+
         # Assert
         assert list1.id != list2.id != list3.id
         assert List.objects.filter(user=user).count() == 3
@@ -132,10 +131,10 @@ class TestListServiceUpdate:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Old Name")
-        
+
         # Act
         updated_list = list_service.update_list(list_obj, name="New Name")
-        
+
         # Assert
         assert updated_list.name == "New Name"
         list_obj.refresh_from_db()
@@ -151,10 +150,10 @@ class TestListServiceUpdate:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Private List", is_public=False)
-        
+
         # Act
         updated_list = list_service.update_list(list_obj, is_public=True)
-        
+
         # Assert
         assert updated_list.is_public is True
         list_obj.refresh_from_db()
@@ -170,10 +169,10 @@ class TestListServiceUpdate:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Original", is_public=True)
-        
+
         # Act
         updated_list = list_service.update_list(list_obj, name="Updated")
-        
+
         # Assert
         assert updated_list.name == "Updated"
         assert updated_list.is_public is True  # Unchanged
@@ -194,10 +193,10 @@ class TestListServiceDelete:
         # Arrange
         list_obj = list_service.create_list(user, "To Delete")
         list_id = list_obj.id
-        
+
         # Act
         list_service.delete_list(list_obj)
-        
+
         # Assert
         assert not List.objects.filter(id=list_id).exists()
 
@@ -213,10 +212,10 @@ class TestListServiceDelete:
         list_obj = list_service.create_list(user, "With Items")
         list_service.add_media_to_list(list_obj, sample_movie)
         list_id = list_obj.id
-        
+
         # Act
         list_service.delete_list(list_obj)
-        
+
         # Assert
         assert not List.objects.filter(id=list_id).exists()
         assert not ListItem.objects.filter(list_id=list_id).exists()
@@ -236,10 +235,10 @@ class TestListServiceAddMedia:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Movies")
-        
+
         # Act
         list_item = list_service.add_media_to_list(list_obj, sample_movie)
-        
+
         # Assert
         assert list_item.media == sample_movie
         assert list_item.list == list_obj
@@ -255,10 +254,10 @@ class TestListServiceAddMedia:
         """
         # Arrange
         list_obj = list_service.create_list(user, "TV Shows")
-        
+
         # Act
         list_item = list_service.add_media_to_list(list_obj, sample_tv_show)
-        
+
         # Assert
         assert list_item.media == sample_tv_show
         assert list_item.list == list_obj
@@ -273,11 +272,11 @@ class TestListServiceAddMedia:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Mixed")
-        
+
         # Act
         item1 = list_service.add_media_to_list(list_obj, sample_movie)
         item2 = list_service.add_media_to_list(list_obj, sample_tv_show)
-        
+
         # Assert
         assert item1.position == 1
         assert item2.position == 2
@@ -293,7 +292,7 @@ class TestListServiceAddMedia:
         # Arrange
         list_obj = list_service.create_list(user, "No Duplicates")
         list_service.add_media_to_list(list_obj, sample_movie)
-        
+
         # Act & Assert
         with pytest.raises(ValueError, match="already in this list"):
             list_service.add_media_to_list(list_obj, sample_movie)
@@ -314,10 +313,10 @@ class TestListServiceRemoveMedia:
         # Arrange
         list_obj = list_service.create_list(user, "Test List")
         list_service.add_media_to_list(list_obj, sample_movie)
-        
+
         # Act
         removed = list_service.remove_media_from_list(list_obj, sample_movie)
-        
+
         # Assert
         assert removed is True
         assert not ListItem.objects.filter(list=list_obj, media=sample_movie).exists()
@@ -332,10 +331,10 @@ class TestListServiceRemoveMedia:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Empty")
-        
+
         # Act
         removed = list_service.remove_media_from_list(list_obj, sample_movie)
-        
+
         # Assert
         assert removed is False
 
@@ -356,10 +355,10 @@ class TestListServiceMoveItems:
         list1 = list_service.create_list(user, "List 1")
         list2 = list_service.create_list(user, "List 2")
         list_item = list_service.add_media_to_list(list1, sample_movie)
-        
+
         # Act
         moved_item = list_service.move_item_to_list(list_item, list2)
-        
+
         # Assert
         assert moved_item.list == list2
         assert not ListItem.objects.filter(list=list1, media=sample_movie).exists()
@@ -376,7 +375,7 @@ class TestListServiceMoveItems:
         list1 = list_service.create_list(user, "User 1 List")
         list2 = list_service.create_list(another_user, "User 2 List")
         list_item = list_service.add_media_to_list(list1, sample_movie)
-        
+
         # Act & Assert
         with pytest.raises(ValueError, match="different users"):
             list_service.move_item_to_list(list_item, list2)
@@ -394,7 +393,7 @@ class TestListServiceMoveItems:
         list2 = list_service.create_list(user, "List 2")
         list_item = list_service.add_media_to_list(list1, sample_movie)
         list_service.add_media_to_list(list2, sample_movie)
-        
+
         # Act & Assert
         with pytest.raises(ValueError, match="already in the target list"):
             list_service.move_item_to_list(list_item, list2)
@@ -416,10 +415,10 @@ class TestListServiceGetLists:
         list_service.create_list(user, "Private 1", is_public=False)
         list_service.create_list(user, "Public", is_public=True)
         list_service.create_list(user, "Private 2", is_public=False)
-        
+
         # Act
         lists = list_service.get_user_lists(user, include_private=True)
-        
+
         # Assert
         assert len(lists) == 3
 
@@ -435,10 +434,10 @@ class TestListServiceGetLists:
         list_service.create_list(user, "Private 1", is_public=False)
         list_service.create_list(user, "Public", is_public=True)
         list_service.create_list(user, "Private 2", is_public=False)
-        
+
         # Act
         lists = list_service.get_user_lists(user, include_private=False)
-        
+
         # Assert
         assert len(lists) == 1
         assert lists[0].name == "Public"
@@ -460,10 +459,10 @@ class TestListServiceGetItems:
         list_obj = list_service.create_list(user, "Ordered")
         list_service.add_media_to_list(list_obj, sample_movie)
         list_service.add_media_to_list(list_obj, sample_tv_show)
-        
+
         # Act
         items = list_service.get_list_items(list_obj)
-        
+
         # Assert
         assert len(items) == 2
         assert items[0].media.id == sample_movie.id
@@ -480,9 +479,9 @@ class TestListServiceGetItems:
         """
         # Arrange
         list_obj = list_service.create_list(user, "Empty")
-        
+
         # Act
         items = list_service.get_list_items(list_obj)
-        
+
         # Assert
         assert len(items) == 0

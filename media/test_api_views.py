@@ -5,7 +5,6 @@ from unittest.mock import Mock, patch
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import RequestFactory
-from django.http import JsonResponse
 
 from media.api_views import media_details_api
 
@@ -211,45 +210,45 @@ class TestMediaDetailsAPIMovies:
 
             # Assert
             assert response.status_code == 200
-            
+
             # Parse JSON response
             import json
             data = json.loads(response.content)
-            
+
             # Verify core movie information
             assert data['id'] == 550
             assert data['title'] == 'Fight Club'
             assert data['overview'] == 'A ticking-time-bomb insomniac and a slippery soap salesman...'
             assert data['media_type'] == 'movie'
-            
+
             # Verify metadata
             assert data['vote_average'] == 8.4
             assert data['release_date'] == '1999-10-15'
             assert data['runtime'] == 139
             assert data['budget'] == 63000000
             assert data['revenue'] == 100853753
-            
+
             # Verify images
             assert data['backdrop_path'] == '/backdrop.jpg'
             assert data['poster_path'] == '/poster.jpg'
-            
+
             # Verify genres
             assert len(data['genres']) == 2
             assert data['genres'][0]['name'] == 'Drama'
-            
+
             # Verify directors (limited to 2)
             assert len(data['directors']) == 2
             assert 'David Fincher' in data['directors']
-            
+
             # Verify cast (limited to 10)
             assert len(data['cast']) == 10
             assert data['cast'][0]['name'] == 'Edward Norton'
             assert data['cast'][0]['character'] == 'The Narrator'
             assert data['cast'][0]['profile_path'] == '/norton.jpg'
-            
+
             # Verify external IDs
             assert data['imdb_id'] == 'tt0137523'
-            
+
             # Verify service calls
             mock_service.get_movie_details.assert_called_once_with(550)
             mock_service.get_movie_credits.assert_called_once_with(550)
@@ -271,7 +270,7 @@ class TestMediaDetailsAPIMovies:
         # Arrange
         request = request_factory.get('/api/media/details/movie/550/')
         request.user = authenticated_user
-        
+
         # Create credits with multiple crew members, only some are directors
         mock_credits = {
             'cast': [],
@@ -297,7 +296,7 @@ class TestMediaDetailsAPIMovies:
             # Assert
             import json
             data = json.loads(response.content)
-            
+
             # Should only include 2 directors, no other crew
             assert len(data['directors']) == 2
             assert 'Director One' in data['directors']
@@ -321,7 +320,7 @@ class TestMediaDetailsAPIMovies:
         # Arrange
         request = request_factory.get('/api/media/details/movie/550/')
         request.user = authenticated_user
-        
+
         # Create 15 cast members to test the 10-person limit
         mock_credits = {
             'cast': [
@@ -344,7 +343,7 @@ class TestMediaDetailsAPIMovies:
             # Assert
             import json
             data = json.loads(response.content)
-            
+
             assert len(data['cast']) == 10
             # Verify first and last in the limited list
             assert data['cast'][0]['name'] == 'Actor 0'
@@ -385,30 +384,30 @@ class TestMediaDetailsAPITVShows:
 
             # Assert
             assert response.status_code == 200
-            
+
             import json
             data = json.loads(response.content)
-            
+
             # Verify TV-specific fields
             assert data['id'] == 1396
             assert data['name'] == 'Breaking Bad'
             assert data['title'] == 'Breaking Bad'  # Alias for consistency
             assert data['media_type'] == 'tv'
-            
+
             # Verify TV metadata
             assert data['first_air_date'] == '2008-01-20'
             assert data['number_of_seasons'] == 5
             assert data['number_of_episodes'] == 62
-            
+
             # Verify creators (from created_by field, limited to 2)
             assert len(data['directors']) == 2
             assert 'Vince Gilligan' in data['directors']
             assert 'Peter Gould' in data['directors']
-            
+
             # Verify cast structure
             assert len(data['cast']) == 10
             assert data['cast'][0]['name'] == 'Bryan Cranston'
-            
+
             # Verify service calls
             mock_service.get_tv_details.assert_called_once_with(1396)
             mock_service.get_tv_credits.assert_called_once_with(1396)
@@ -428,7 +427,7 @@ class TestMediaDetailsAPITVShows:
         # Arrange
         request = request_factory.get('/api/media/details/tv/1396/')
         request.user = authenticated_user
-        
+
         tv_details_no_creators = {
             'id': 1396,
             'name': 'Breaking Bad',
@@ -437,7 +436,7 @@ class TestMediaDetailsAPITVShows:
             'number_of_seasons': 5,
             'number_of_episodes': 62
         }
-        
+
         mock_credits = {'cast': [], 'crew': []}
 
         with patch('media.api_views.TMDbService') as mock_service_class:
@@ -453,7 +452,7 @@ class TestMediaDetailsAPITVShows:
             # Assert
             import json
             data = json.loads(response.content)
-            
+
             assert len(data['directors']) == 0
             assert data['directors'] == []
 
@@ -476,15 +475,15 @@ class TestMediaDetailsAPIErrorHandling:
         # The login_required decorator will raise an exception or redirect
         # We need to test this through Django's test client for full decorator behavior
         from django.test import Client
-        
+
         client = Client()
         response = client.get('/api/media/details/movie/550/', follow=True)
-        
+
         # Should eventually redirect to login page
         # With SSL redirect, we get 301 first, then potentially 302
         assert response.status_code == 200 or response.redirect_chain[-1][1] in [301, 302]
         # Check if we ended up at a login or redirect page
-        assert any(keyword in str(response.redirect_chain) or keyword in response.request['PATH_INFO'] 
+        assert any(keyword in str(response.redirect_chain) or keyword in response.request['PATH_INFO']
                    for keyword in ['/login/', '/accounts/login/'])
 
     def test_tmdb_service_exception_returns_error(
@@ -512,10 +511,10 @@ class TestMediaDetailsAPIErrorHandling:
 
             # Assert
             assert response.status_code == 500
-            
+
             import json
             data = json.loads(response.content)
-            
+
             assert 'error' in data
             assert data['error'] == 'TMDb API connection failed'
 
@@ -534,7 +533,7 @@ class TestMediaDetailsAPIErrorHandling:
         # Arrange
         request = request_factory.get('/api/media/details/movie/550/')
         request.user = authenticated_user
-        
+
         # External IDs without imdb_id
         mock_external_ids_no_imdb = {
             'facebook_id': 'FightClub',
@@ -553,10 +552,10 @@ class TestMediaDetailsAPIErrorHandling:
 
             # Assert
             assert response.status_code == 200
-            
+
             import json
             data = json.loads(response.content)
-            
+
             # imdb_id should be None when not present
             assert data['imdb_id'] is None
 
@@ -575,7 +574,7 @@ class TestMediaDetailsAPIErrorHandling:
         # Arrange
         request = request_factory.get('/api/media/details/movie/550/')
         request.user = authenticated_user
-        
+
         # Empty credits
         mock_empty_credits = {
             'cast': [],
@@ -594,10 +593,10 @@ class TestMediaDetailsAPIErrorHandling:
 
             # Assert
             assert response.status_code == 200
-            
+
             import json
             data = json.loads(response.content)
-            
+
             assert data['directors'] == []
             assert data['cast'] == []
 
@@ -617,7 +616,7 @@ class TestMediaDetailsAPIErrorHandling:
         # Arrange
         request = request_factory.get('/api/media/details/movie/550/')
         request.user = authenticated_user
-        
+
         # Credits with missing fields
         mock_malformed_credits = {
             'cast': [
@@ -643,16 +642,16 @@ class TestMediaDetailsAPIErrorHandling:
 
             # Assert - API may return error for malformed data
             assert response.status_code in [200, 500]
-            
+
             if response.status_code == 200:
                 import json
                 data = json.loads(response.content)
-                
+
                 # Should handle malformed data gracefully
                 assert len(data['cast']) == 3
                 assert data['cast'][0]['name'] == 'Actor 1'
                 assert data['cast'][0]['character'] is None
                 assert data['cast'][0]['profile_path'] is None
-                
+
                 # Directors list should be empty (no valid directors found)
                 assert data['directors'] == []

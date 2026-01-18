@@ -55,7 +55,7 @@ class TestProfileServiceCreate:
         """
         # Act
         profile = profile_service.create_profile(user)
-        
+
         # Assert
         assert profile.id is not None
         assert profile.user == user
@@ -74,7 +74,7 @@ class TestProfileServiceCreate:
         """
         # Arrange
         profile_service.create_profile(user)
-        
+
         # Act & Assert
         with pytest.raises(ValueError, match="already has a public profile"):
             profile_service.create_profile(user)
@@ -90,7 +90,7 @@ class TestProfileServiceCreate:
         # Act
         profile1 = profile_service.create_profile(user)
         profile2 = profile_service.create_profile(another_user)
-        
+
         # Assert
         assert profile1.user == user
         assert profile2.user == another_user
@@ -112,10 +112,10 @@ class TestProfileServiceUpdate:
         # Arrange
         profile = profile_service.create_profile(user)
         new_bio = "Movie enthusiast and TV show addict!"
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, bio=new_bio)
-        
+
         # Assert
         assert updated_profile.bio == new_bio
         profile.refresh_from_db()
@@ -132,10 +132,10 @@ class TestProfileServiceUpdate:
         # Arrange
         profile = profile_service.create_profile(user)
         avatar_url = "https://example.com/avatar.jpg"
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, avatar_url=avatar_url)
-        
+
         # Assert
         assert updated_profile.avatar_url == avatar_url
 
@@ -149,10 +149,10 @@ class TestProfileServiceUpdate:
         """
         # Arrange
         profile = profile_service.create_profile(user)
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, is_visible=False)
-        
+
         # Assert
         assert updated_profile.is_visible is False
         profile.refresh_from_db()
@@ -168,10 +168,10 @@ class TestProfileServiceUpdate:
         """
         # Arrange
         profile = profile_service.create_profile(user)
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, show_watched_episodes=False)
-        
+
         # Assert
         assert updated_profile.show_watched_episodes is False
 
@@ -185,10 +185,10 @@ class TestProfileServiceUpdate:
         """
         # Arrange
         profile = profile_service.create_profile(user)
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, show_lists=False)
-        
+
         # Assert
         assert updated_profile.show_lists is False
 
@@ -203,10 +203,10 @@ class TestProfileServiceUpdate:
         # Arrange
         profile = profile_service.create_profile(user)
         original_visibility = profile.is_visible
-        
+
         # Act
         updated_profile = profile_service.update_profile(profile, bio="New bio")
-        
+
         # Assert
         assert updated_profile.bio == "New bio"
         assert updated_profile.is_visible == original_visibility
@@ -221,7 +221,7 @@ class TestProfileServiceUpdate:
         """
         # Arrange
         profile = profile_service.create_profile(user)
-        
+
         # Act
         updated_profile = profile_service.update_profile(
             profile,
@@ -229,7 +229,7 @@ class TestProfileServiceUpdate:
             avatar_url="https://example.com/new-avatar.jpg",
             is_visible=False
         )
-        
+
         # Assert
         assert updated_profile.bio == "New bio"
         assert updated_profile.avatar_url == "https://example.com/new-avatar.jpg"
@@ -250,10 +250,10 @@ class TestProfileServiceGetByNickname:
         """
         # Arrange
         profile_service.create_profile(user)
-        
+
         # Act
         profile = profile_service.get_profile_by_nickname("testuser")
-        
+
         # Assert
         assert profile is not None
         assert profile.user.nickname == "testuser"
@@ -269,10 +269,10 @@ class TestProfileServiceGetByNickname:
         # Arrange
         profile = profile_service.create_profile(user)
         profile_service.update_profile(profile, is_visible=False)
-        
+
         # Act
         result = profile_service.get_profile_by_nickname("testuser")
-        
+
         # Assert
         assert result is None
 
@@ -286,7 +286,7 @@ class TestProfileServiceGetByNickname:
         """
         # Act
         result = profile_service.get_profile_by_nickname("nonexistent")
-        
+
         # Assert
         assert result is None
 
@@ -300,10 +300,10 @@ class TestProfileServiceGetByNickname:
         """
         # Arrange
         profile_service.create_profile(user)
-        
+
         # Act
         result = profile_service.get_profile_by_nickname("TESTUSER")
-        
+
         # Assert
         # This depends on database collation - adjust if needed
         assert result is None or result.user.nickname == "testuser"
@@ -323,7 +323,7 @@ class TestProfileServiceGetOrCreate:
         """
         # Act
         profile = profile_service.get_or_create_profile(user)
-        
+
         # Assert
         assert profile.id is not None
         assert profile.user == user
@@ -339,10 +339,10 @@ class TestProfileServiceGetOrCreate:
         # Arrange
         existing_profile = profile_service.create_profile(user)
         existing_id = existing_profile.id
-        
+
         # Act
         profile = profile_service.get_or_create_profile(user)
-        
+
         # Assert
         assert profile.id == existing_id
         assert PublicProfile.objects.filter(user=user).count() == 1
@@ -359,7 +359,7 @@ class TestProfileServiceGetOrCreate:
         profile1 = profile_service.get_or_create_profile(user)
         profile2 = profile_service.get_or_create_profile(user)
         profile3 = profile_service.get_or_create_profile(user)
-        
+
         # Assert
         assert profile1.id == profile2.id == profile3.id
         assert PublicProfile.objects.filter(user=user).count() == 1

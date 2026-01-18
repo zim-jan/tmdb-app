@@ -49,7 +49,9 @@ def public_profile_view(request: HttpRequest, nickname: str) -> HttpResponse:
     # Get watched episodes if allowed
     watched_episodes = []
     if profile.show_watched_episodes:
-        watched_episodes = WatchedEpisode.objects.filter(user=user).select_related("tv_show").order_by("-watched_at")[:20]
+        watched_episodes = WatchedEpisode.objects.filter(
+            user=user
+        ).select_related("tv_show").order_by("-watched_at")[:20]
 
     # Calculate stats
     total_lists = len(list_service.get_user_lists(user))

@@ -107,10 +107,10 @@ class TestTMDbServiceMakeRequest:
         mock_response.json.return_value = {"success": True}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         result = tmdb_service._make_request("test/endpoint")
-        
+
         # Assert
         assert result == {"success": True}
         mock_get.assert_called_once()
@@ -129,10 +129,10 @@ class TestTMDbServiceMakeRequest:
         mock_response.json.return_value = {}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         tmdb_service._make_request("test/endpoint", {"query": "test"})
-        
+
         # Assert
         call_args = mock_get.call_args
         assert call_args[1]["params"]["api_key"] == "test_api_key_12345"
@@ -151,7 +151,7 @@ class TestTMDbServiceMakeRequest:
         mock_response = Mock()
         mock_response.raise_for_status.side_effect = requests.HTTPError("404 Not Found")
         mock_get.return_value = mock_response
-        
+
         # Act & Assert
         with pytest.raises(requests.HTTPError):
             tmdb_service._make_request("invalid/endpoint")
@@ -167,7 +167,7 @@ class TestTMDbServiceMakeRequest:
         """
         # Arrange
         mock_get.side_effect = requests.Timeout("Request timed out")
-        
+
         # Act & Assert
         with pytest.raises(requests.Timeout):
             tmdb_service._make_request("test/endpoint")
@@ -190,10 +190,10 @@ class TestTMDbServiceSearchMovie:
         mock_response.json.return_value = mock_movie_search_response
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         results = tmdb_service.search_movie("Matrix")
-        
+
         # Assert
         assert len(results) == 2
         assert results[0]["title"] == "The Matrix"
@@ -213,10 +213,10 @@ class TestTMDbServiceSearchMovie:
         mock_response.json.return_value = {"results": []}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         results = tmdb_service.search_movie("NonExistentMovie12345")
-        
+
         # Assert
         assert results == []
 
@@ -234,10 +234,10 @@ class TestTMDbServiceSearchMovie:
         mock_response.json.return_value = {}  # No 'results' key
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         results = tmdb_service.search_movie("test")
-        
+
         # Assert
         assert results == []
 
@@ -259,10 +259,10 @@ class TestTMDbServiceSearchTVShow:
         mock_response.json.return_value = mock_tv_search_response
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         results = tmdb_service.search_tv_show("Breaking Bad")
-        
+
         # Assert
         assert len(results) == 1
         assert results[0]["name"] == "Breaking Bad"
@@ -282,10 +282,10 @@ class TestTMDbServiceSearchTVShow:
         mock_response.json.return_value = {"results": []}
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         results = tmdb_service.search_tv_show("NonExistentShow12345")
-        
+
         # Assert
         assert results == []
 
@@ -307,10 +307,10 @@ class TestTMDbServiceGetDetails:
         mock_response.json.return_value = mock_movie_details_response
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         details = tmdb_service.get_movie_details(27205)
-        
+
         # Assert
         assert details["title"] == "Inception"
         assert details["runtime"] == 148
@@ -335,10 +335,10 @@ class TestTMDbServiceGetDetails:
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         details = tmdb_service.get_tv_details(1396)
-        
+
         # Assert
         assert details["name"] == "Breaking Bad"
         assert details["number_of_seasons"] == 5
@@ -370,10 +370,10 @@ class TestTMDbServiceGetCredits:
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         credits = tmdb_service.get_movie_credits(27205)
-        
+
         # Assert
         assert len(credits["cast"]) == 2
         assert len(credits["crew"]) == 1
@@ -400,10 +400,10 @@ class TestTMDbServiceGetCredits:
         }
         mock_response.raise_for_status = Mock()
         mock_get.return_value = mock_response
-        
+
         # Act
         credits = tmdb_service.get_tv_credits(1396)
-        
+
         # Assert
         assert len(credits["cast"]) == 1
         assert credits["cast"][0]["name"] == "Bryan Cranston"

@@ -84,7 +84,7 @@ class ManualMediaForm(forms.ModelForm):
         self.fields["original_language"].required = False
         self.fields["overview"].required = False
         self.fields["release_date"].required = False
-        
+
         # Set default language to 'en' if not provided
         if not self.initial.get("original_language"):
             self.fields["original_language"].initial = "en"

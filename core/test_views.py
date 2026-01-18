@@ -7,7 +7,6 @@ This module tests the main application views including home page and error handl
 import pytest
 from django.contrib.auth import get_user_model
 from django.test import Client
-from django.urls import reverse
 
 from lists.models import List, ListItem
 from media.models import Movie, TVShow, WatchedEpisode
@@ -38,14 +37,14 @@ class TestIndexView:
     def test_index_view_anonymous_user_returns_empty_context(self, client):
         """
         Test that anonymous users get an empty context on the home page.
-        
+
         Arrange: Create request with anonymous user
         Act: Call index_view
         Assert: Response is successful and no user stats shown
         """
         # Arrange & Act
         response = client.get("/", follow=True)
-        
+
         # Assert
         assert response.status_code == 200
         # Anonymous users shouldn't see stats
@@ -61,10 +60,10 @@ class TestIndexView:
         """
         # Arrange
         client.force_login(user)
-        
+
         # Act
         response = client.get("/", follow=True)
-        
+
         # Assert
         assert response.status_code == 200
         assert response.context["total_lists"] == 0
@@ -81,12 +80,12 @@ class TestIndexView:
         """
         # Arrange
         client.force_login(user)
-        
+
         # Create test data
         list1 = List.objects.create(user=user, name="Favorites")
         list2 = List.objects.create(user=user, name="Watch Later")
         list3 = List.objects.create(user=user, name="Archive")
-        
+
         # Create different movies to avoid unique constraint
         movie1 = Movie.objects.create(
             title="Test Movie 1",
@@ -103,16 +102,16 @@ class TestIndexView:
             original_title="Test Movie 3",
             tmdb_id=12347
         )
-        
+
         ListItem.objects.create(list=list1, media=movie1, position=1)
         ListItem.objects.create(list=list1, media=movie2, position=2)
         ListItem.objects.create(list=list2, media=movie3, position=1)
         ListItem.objects.create(list=list3, media=movie1, position=1)
         ListItem.objects.create(list=list3, media=movie2, position=2)
-        
+
         # Act
         response = client.get("/", follow=True)
-        
+
         # Assert
         assert response.status_code == 200
         assert response.context["total_lists"] == 3
@@ -128,14 +127,14 @@ class TestIndexView:
         """
         # Arrange
         client.force_login(user)
-        
+
         # Create TV show first
         tv_show = TVShow.objects.create(
             title="Test Show",
             original_title="Test Show",
             tmdb_id=98765
         )
-        
+
         # Create watched episodes
         for i in range(10):
             WatchedEpisode.objects.create(
@@ -144,10 +143,10 @@ class TestIndexView:
                 season_number=1,
                 episode_number=i + 1
             )
-        
+
         # Act
         response = client.get("/", follow=True)
-        
+
         # Assert
         assert response.status_code == 200
         assert response.context["total_watched"] == 10
@@ -162,14 +161,14 @@ class TestIndexView:
         """
         # Arrange
         client.force_login(user)
-        
+
         # Create lists (older to newer)
         for i in range(6):
             List.objects.create(user=user, name=f"List {i}")
-        
+
         # Act
         response = client.get("/", follow=True)
-        
+
         # Assert
         assert response.status_code == 200
         recent_lists = list(response.context["recent_lists"])
@@ -193,7 +192,7 @@ class TestCustom404:
         """
         # Arrange & Act
         response = client.get("/nonexistent-page-that-does-not-exist/", follow=True)
-        
+
         # Assert
         assert response.status_code == 404
 
@@ -211,7 +210,7 @@ class TestCustom404:
             "/another/missing/page/",
             "/404test/",
         ]
-        
+
         # Act & Assert
         for path in paths:
             response = client.get(path, follow=True)

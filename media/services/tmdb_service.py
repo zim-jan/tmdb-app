@@ -340,7 +340,7 @@ class TMDbService:
                 extra={'tmdb_id': tmdb_id, 'media_type': media_type}
             )
             # If enrichment fails, continue with basic data
-        except Exception as e:
+        except Exception:
             logger.error(
                 "Unexpected error enriching search result for %s %s",
                 media_type,

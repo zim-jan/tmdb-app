@@ -139,7 +139,7 @@ def list_detail_view(request: HttpRequest, list_id: int) -> HttpResponse:
                     str(e),
                     extra={'media_id': item.media.id, 'tmdb_id': item.media.tmdb_id}
                 )
-            except Exception as e:
+            except Exception:
                 logger.error(
                     "Unexpected error fetching TMDb data for media_id=%s",
                     item.media.id,

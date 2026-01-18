@@ -32,7 +32,7 @@ def index_view(request: HttpRequest) -> HttpResponse:
         total_lists = List.objects.filter(user=request.user).count()
         total_items = ListItem.objects.filter(list__user=request.user).count()
         total_watched = WatchedEpisode.objects.filter(user=request.user).count()
-        
+
         # Get recent lists
         recent_lists = List.objects.filter(user=request.user).order_by('-updated_at')[:5]
 

@@ -8,7 +8,6 @@ import pytest
 from datetime import date
 
 from media.factories.media_factory import (
-    MediaFactory,
     MediaFactoryProvider,
     MovieFactory,
     TVShowFactory,
@@ -35,10 +34,10 @@ class TestMovieFactory:
             "original_title": "The Matrix",
             "tmdb_id": 603
         }
-        
+
         # Act
         movie = factory.create_media(**data)
-        
+
         # Assert
         assert isinstance(movie, Movie)
         assert movie.title == "The Matrix"
@@ -71,10 +70,10 @@ class TestMovieFactory:
             "budget": 160000000,
             "revenue": 829895144
         }
-        
+
         # Act
         movie = factory.create_media(**data)
-        
+
         # Assert
         assert movie.title == "Inception"
         assert movie.runtime == 148
@@ -98,10 +97,10 @@ class TestMovieFactory:
             {"title": "Movie 2", "original_title": "Movie 2", "tmdb_id": 1002},
             {"title": "Movie 3", "original_title": "Movie 3", "tmdb_id": 1003},
         ]
-        
+
         # Act
         movies = [factory.create_media(**data) for data in movies_data]
-        
+
         # Assert
         assert len(movies) == 3
         assert len({m.id for m in movies}) == 3  # All unique IDs
@@ -126,10 +125,10 @@ class TestTVShowFactory:
             "original_title": "Breaking Bad",
             "tmdb_id": 1396
         }
-        
+
         # Act
         tv_show = factory.create_media(**data)
-        
+
         # Assert
         assert isinstance(tv_show, TVShow)
         assert tv_show.title == "Breaking Bad"
@@ -163,10 +162,10 @@ class TestTVShowFactory:
             "episode_run_time": 60,
             "status": "Ended"
         }
-        
+
         # Act
         tv_show = factory.create_media(**data)
-        
+
         # Assert
         assert tv_show.title == "Game of Thrones"
         assert tv_show.number_of_seasons == 8
@@ -189,10 +188,10 @@ class TestTVShowFactory:
             {"title": "Show 2", "original_title": "Show 2", "tmdb_id": 2002},
             {"title": "Show 3", "original_title": "Show 3", "tmdb_id": 2003},
         ]
-        
+
         # Act
         shows = [factory.create_media(**data) for data in shows_data]
-        
+
         # Assert
         assert len(shows) == 3
         assert len({s.id for s in shows}) == 3  # All unique IDs
@@ -212,7 +211,7 @@ class TestMediaFactoryProvider:
         """
         # Act
         factory = MediaFactoryProvider.get_factory("MOVIE")
-        
+
         # Assert
         assert isinstance(factory, MovieFactory)
 
@@ -226,7 +225,7 @@ class TestMediaFactoryProvider:
         """
         # Act
         factory = MediaFactoryProvider.get_factory("TV_SHOW")
-        
+
         # Assert
         assert isinstance(factory, TVShowFactory)
 
@@ -253,7 +252,7 @@ class TestMediaFactoryProvider:
         # Act
         factory1 = MediaFactoryProvider.get_factory("MOVIE")
         factory2 = MediaFactoryProvider.get_factory("MOVIE")
-        
+
         # Assert
         assert factory1 is not factory2  # Different instances
 
@@ -278,10 +277,10 @@ class TestFactoryIntegration:
             "tmdb_id": 157336,
             "runtime": 169
         }
-        
+
         # Act
         movie = factory.create_media(**data)
-        
+
         # Assert
         assert isinstance(movie, Movie)
         assert movie.title == "Interstellar"
@@ -303,10 +302,10 @@ class TestFactoryIntegration:
             "tmdb_id": 66732,
             "number_of_seasons": 4
         }
-        
+
         # Act
         tv_show = factory.create_media(**data)
-        
+
         # Assert
         assert isinstance(tv_show, TVShow)
         assert tv_show.title == "Stranger Things"
@@ -323,7 +322,7 @@ class TestFactoryIntegration:
         # Arrange
         movie_factory = MediaFactoryProvider.get_factory("MOVIE")
         tv_factory = MediaFactoryProvider.get_factory("TV_SHOW")
-        
+
         # Act
         movie = movie_factory.create_media(
             title="Test Movie",
@@ -335,7 +334,7 @@ class TestFactoryIntegration:
             original_title="Test Show",
             tmdb_id=99002
         )
-        
+
         # Assert
         assert isinstance(movie, Movie)
         assert isinstance(tv_show, TVShow)

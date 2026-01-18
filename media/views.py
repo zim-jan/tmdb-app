@@ -82,13 +82,13 @@ def browse_view(request: HttpRequest) -> HttpResponse:
     media_list = Media.objects.filter(
         list_items__list__user=request.user
     ).distinct()
-    
+
     # Apply media type filter
     if media_type == "movie":
         media_list = media_list.filter(media_type="MOVIE")
     elif media_type == "tv":
         media_list = media_list.filter(media_type="TV_SHOW")
-    
+
     # Apply sorting
     if sort_by == "title":
         media_list = media_list.order_by("title")
@@ -100,7 +100,7 @@ def browse_view(request: HttpRequest) -> HttpResponse:
         media_list = media_list.order_by("-vote_average")
     else:
         media_list = media_list.order_by("-created_at")
-    
+
     media_list = media_list[:50]
 
     # Enrich media using data already in database
@@ -245,7 +245,7 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
                 extra={'media_id': media.id, 'tmdb_id': media.tmdb_id}
             )
             pass  # Use basic data if TMDb fails
-        except Exception as e:
+        except Exception:
             logger.error(
                 "Unexpected error fetching TMDb details for media_id=%s",
                 media.id,
@@ -271,7 +271,7 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
                 media_id,
                 extra={'media_id': media_id}
             )
-        
+
         if tv_show:
             tracking_service = EpisodeTrackingService()
             watched_episodes = tracking_service.get_watched_episodes(request.user, tv_show)
@@ -472,15 +472,17 @@ def watch_history_view(request: HttpRequest) -> HttpResponse:
         Rendered watch history page.
     """
     # Get watched episodes
-    watched_episodes = WatchedEpisode.objects.filter(user=request.user).select_related("tv_show").order_by("-watched_at")[:50]
-    
+    watched_episodes = WatchedEpisode.objects.filter(
+        user=request.user
+    ).select_related("tv_show").order_by("-watched_at")[:50]
+
     # Get watched movies from lists
     watched_movies = ListItem.objects.filter(
         list__user=request.user,
         status=WatchStatus.WATCHED.value,
         media__media_type="MOVIE"
     ).select_related("media").order_by("-added_at")[:50]
-    
+
     # Combine and sort by timestamp
     watched_list = []
     for episode in watched_episodes:
@@ -491,7 +493,7 @@ def watch_history_view(request: HttpRequest) -> HttpResponse:
             'timestamp': episode.watched_at,
             'episode': episode
         })
-    
+
     for movie_item in watched_movies:
         watched_list.append({
             'type': 'movie',
@@ -500,7 +502,7 @@ def watch_history_view(request: HttpRequest) -> HttpResponse:
             'timestamp': movie_item.added_at,
             'item': movie_item
         })
-    
+
     # Sort by timestamp descending
     watched_list.sort(key=lambda x: x['timestamp'], reverse=True)
 
