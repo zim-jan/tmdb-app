@@ -75,6 +75,8 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    # Third-party apps
+    "corsheaders",
     # Project apps
     "users",
     "lists",
@@ -85,6 +87,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -270,3 +273,38 @@ LOGGING = {
         },
     },
 }
+
+# CORS Configuration
+# Allows API endpoints to be accessed from different origins
+if DEBUG:
+    # Allow all origins in development for easy testing
+    CORS_ALLOW_ALL_ORIGINS = True
+else:
+    # Restrict to specific origins in production
+    CORS_ALLOWED_ORIGINS = parse_comma_separated("CORS_ALLOWED_ORIGINS", "")
+
+# Allow credentials (cookies, Authorization header) in CORS requests
+CORS_ALLOW_CREDENTIALS = True
+
+# Allow specific HTTP methods
+CORS_ALLOW_METHODS = [
+    "DELETE",
+    "GET",
+    "OPTIONS",
+    "PATCH",
+    "POST",
+    "PUT",
+]
+
+# Allow specific headers
+CORS_ALLOW_HEADERS = [
+    "accept",
+    "accept-encoding",
+    "authorization",
+    "content-type",
+    "dnt",
+    "origin",
+    "user-agent",
+    "x-csrftoken",
+    "x-requested-with",
+]
