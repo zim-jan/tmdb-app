@@ -143,8 +143,8 @@
 {% block content %}
 <div class="hero">
     <div class="container">
-        <h1>Browse Media</h1>
-        <p>Discover movies and TV shows in your collection</p>
+        <h1>Your Media Library</h1>
+        <p>Browse all movies and TV shows from your lists</p>
     </div>
 </div>
 
@@ -162,6 +162,16 @@
         <a href="{% url 'media:search' %}" class="btn btn-secondary">
             🔍 Search TMDb
         </a>
+        
+        <!-- Sort Menu -->
+        <select id="sortSelect" style="padding: 0.5rem 1rem; border-radius: 8px; border: 2px solid #ddd; background: white; cursor: pointer; font-weight: 600;">
+            <option value="">Sort By...</option>
+            <option value="title" {% if sort_by == 'title' %}selected{% endif %}>📝 Title (A-Z)</option>
+            <option value="-title" {% if sort_by == '-title' %}selected{% endif %}>📝 Title (Z-A)</option>
+            <option value="-rating" {% if sort_by == '-rating' %}selected{% endif %}>⭐ Rating (High)</option>
+            <option value="rating" {% if sort_by == 'rating' %}selected{% endif %}>⭐ Rating (Low)</option>
+            <option value="-added_at" {% if sort_by == '-added_at' %}selected{% endif %}>📅 Recently Added</option>
+        </select>
     </div>
 
     {% if media_list %}
@@ -207,11 +217,22 @@
         </div>
     {% else %}
         <div style="text-align: center; padding: 4rem; background: white; border-radius: 12px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-            <div style="font-size: 4rem; margin-bottom: 1rem;">📽️</div>
-            <h3>No media found</h3>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Try searching for something!</p>
-            <a href="{% url 'media:search' %}" class="btn btn-primary">Search TMDb</a>
+            <div style="font-size: 4rem; margin-bottom: 1rem;">�</div>
+            <h3>No media in your lists yet</h3>
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Start by searching for movies and TV shows to add to your lists</p>
+            <a href="{% url 'media:search' %}" class="btn btn-primary">🔍 Search & Add Media</a>
         </div>
     {% endif %}
 </div>
+
+<script>
+document.getElementById('sortSelect').addEventListener('change', function(e) {
+    const sortValue = e.target.value;
+    if (sortValue) {
+        const currentParams = new URLSearchParams(window.location.search);
+        currentParams.set('sort', sortValue);
+        window.location.href = `{% url 'media:browse' %}?${currentParams.toString()}`;
+    }
+});
+</script>
 {% endblock %}

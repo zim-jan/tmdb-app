@@ -11,7 +11,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 
-from lists.models import List
+from lists.models import List, ListItem
 from lists.services import ListService
 from media.forms import ManualMediaForm
 from media.models import Media, TVShow, WatchedEpisode
@@ -21,7 +21,7 @@ from media.services import EpisodeTrackingService, MediaService, TMDbService
 @login_required
 def browse_view(request: HttpRequest) -> HttpResponse:
     """
-    Browse all media in the database.
+    Browse media from user's lists.
 
     Parameters
     ----------
@@ -34,13 +34,40 @@ def browse_view(request: HttpRequest) -> HttpResponse:
         Rendered browse page.
     """
     media_type = request.GET.get("type", "all")
+    sort_by = request.GET.get("sort", "-added_at")
 
+    # Get media from user's lists
+    media_list = ListItem.objects.filter(
+        list__user=request.user
+    ).select_related('media').values_list('media', flat=True).distinct()
+    
+    # Apply media type filter
     if media_type == "movie":
-        media_list = Media.objects.filter(media_type="MOVIE").order_by("-created_at")[:20]
+        media_list = Media.objects.filter(
+            id__in=media_list,
+            media_type="MOVIE"
+        )
     elif media_type == "tv":
-        media_list = Media.objects.filter(media_type="TV_SHOW").order_by("-created_at")[:20]
+        media_list = Media.objects.filter(
+            id__in=media_list,
+            media_type="TV_SHOW"
+        )
     else:
-        media_list = Media.objects.all().order_by("-created_at")[:20]
+        media_list = Media.objects.filter(id__in=media_list)
+    
+    # Apply sorting
+    if sort_by == "title":
+        media_list = media_list.order_by("title")
+    elif sort_by == "-title":
+        media_list = media_list.order_by("-title")
+    elif sort_by == "rating":
+        media_list = media_list.order_by("vote_average")
+    elif sort_by == "-rating":
+        media_list = media_list.order_by("-vote_average")
+    else:
+        media_list = media_list.order_by("-created_at")
+    
+    media_list = media_list[:50]
 
     # Enrich media with TMDb data
     tmdb_service = TMDbService()
@@ -80,6 +107,7 @@ def browse_view(request: HttpRequest) -> HttpResponse:
     return render(request, "media/browse.html", {
         "media_list": enriched_media,
         "media_type": media_type,
+        "sort_by": sort_by,
         "user_lists": user_lists,
     })
 
