@@ -223,7 +223,7 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
                 details = tmdb_service.get_movie_details(media.tmdb_id)
 
                 # Get TMDb external IDs
-                external_ids = tmdb_service._make_request(f'/movie/{media.tmdb_id}/external_ids')
+                external_ids = tmdb_service.get_movie_external_ids(media.tmdb_id)
                 details['imdb_id'] = external_ids.get('imdb_id')
 
                 # Get credits (cast and crew)
@@ -234,7 +234,7 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
             else:
                 details = tmdb_service.get_tv_details(media.tmdb_id)
                 # Get TMDb external IDs
-                external_ids = tmdb_service._make_request(f'/tv/{media.tmdb_id}/external_ids')
+                external_ids = tmdb_service.get_tv_external_ids(media.tmdb_id)
                 details['imdb_id'] = external_ids.get('imdb_id')
 
                 # Get credits (cast and crew)

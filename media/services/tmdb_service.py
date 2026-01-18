@@ -253,6 +253,38 @@ class TMDbService:
         """
         return self._make_request(f"tv/{tmdb_id}/images")
 
+    def get_movie_external_ids(self, tmdb_id: int) -> dict[str, Any]:
+        """
+        Get external IDs for a movie (IMDB, etc).
+
+        Parameters
+        ----------
+        tmdb_id : int
+            TMDb movie ID.
+
+        Returns
+        -------
+        dict[str, Any]
+            External IDs including IMDB ID.
+        """
+        return self._make_request(f"movie/{tmdb_id}/external_ids")
+
+    def get_tv_external_ids(self, tmdb_id: int) -> dict[str, Any]:
+        """
+        Get external IDs for a TV show (IMDB, etc).
+
+        Parameters
+        ----------
+        tmdb_id : int
+            TMDb TV show ID.
+
+        Returns
+        -------
+        dict[str, Any]
+            External IDs including IMDB ID.
+        """
+        return self._make_request(f"tv/{tmdb_id}/external_ids")
+
     def enrich_search_result(self, result: dict[str, Any], media_type: str) -> dict[str, Any]:
         """
         Enrich search result with additional details.
