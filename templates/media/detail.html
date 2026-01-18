@@ -315,9 +315,9 @@ details.episode-season[open] summary {
 
                         <h3 style="margin-top: 2rem; margin-bottom: 1rem;">Mark Episodes</h3>
                         <div style="margin-top: 1rem;">
-                            {% if media.tvshow.number_of_seasons %}
-                                {% for season_num in media.tvshow.number_of_seasons|range %}
-                                    <details class="episode-season" style="display: none;">
+                            {% if tv_show and tv_show.number_of_seasons %}
+                                {% for season_num in tv_show.number_of_seasons|range %}
+                                    <details class="episode-season">
                                         <summary style="cursor: pointer; font-weight: 600;">Season {{ season_num }}</summary>
                                         <div style="margin-top: 1rem; display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 0.5rem;">
                                             {% for ep_num in 20|range %}
@@ -327,7 +327,7 @@ details.episode-season[open] summary {
                                                         {% with ep_key=season_str|add:","|add:ep_str %}
                                                     {% if watched_episodes_set|is_watched:ep_key %}
                                                         <form method="post" 
-                                                              action="{% url 'media:unmark_watched' tv_show_id=media.tvshow.id %}"
+                                                              action="{% url 'media:unmark_watched' tv_show_id=media.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="season" value="{{ season_num }}">
@@ -338,7 +338,7 @@ details.episode-season[open] summary {
                                                         </form>
                                                     {% else %}
                                                         <form method="post" 
-                                                              action="{% url 'media:mark_watched' tv_show_id=media.tvshow.id %}"
+                                                              action="{% url 'media:mark_watched' tv_show_id=media.id %}"
                                                               style="display: inline;">
                                                             {% csrf_token %}
                                                             <input type="hidden" name="season" value="{{ season_num }}">

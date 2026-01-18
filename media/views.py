@@ -199,16 +199,27 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
     watched_episodes = []
     watched_episodes_set = set()
     progress = None
+    tv_show = None
     if media.media_type == "TV_SHOW":
-        tv_show = TVShow.objects.get(id=media_id)
-        tracking_service = EpisodeTrackingService()
-        watched_episodes = tracking_service.get_watched_episodes(request.user, tv_show)
-        # Create a set of (season, episode) tuples for easy lookup
-        watched_episodes_set = {(ep.season_number, ep.episode_number) for ep in watched_episodes}
-        progress = tracking_service.get_watch_progress(request.user, tv_show)
+        try:
+            tv_show = TVShow.objects.get(id=media_id)
+        except TVShow.DoesNotExist:
+            # In case media_id refers to the parent Media of a TVShow
+            try:
+                tv_show = media.tvshow
+            except TVShow.DoesNotExist:
+                pass
+        
+        if tv_show:
+            tracking_service = EpisodeTrackingService()
+            watched_episodes = tracking_service.get_watched_episodes(request.user, tv_show)
+            # Create a set of (season, episode) tuples for easy lookup
+            watched_episodes_set = {(ep.season_number, ep.episode_number) for ep in watched_episodes}
+            progress = tracking_service.get_watch_progress(request.user, tv_show)
 
     return render(request, "media/detail.html", {
         "media": media,
+        "tv_show": tv_show,
         "user_lists": user_lists,
         "watched_episodes": watched_episodes,
         "watched_episodes_set": watched_episodes_set,
