@@ -498,7 +498,7 @@ def add_manual_media_view(request: HttpRequest) -> HttpResponse:
                 try:
                     list_obj = List.objects.get(id=list_id, user=request.user)
                     list_service = ListService()
-                    list_service.add_to_list(list_obj, media)
+                    list_service.add_media_to_list(list_obj, media)
                     messages.success(request, f"Dodano do listy '{list_obj.name}'")
                     return redirect("lists:detail", list_id=list_id)
                 except List.DoesNotExist:
