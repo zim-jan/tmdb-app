@@ -1,0 +1,19 @@
+# Production dependencies generated from pyproject.toml
+# Install with: pip install -r requirements.txt
+
+# Web Framework
+django>=6.0,<7.0
+
+# HTTP client
+requests>=2.31.0
+
+# Environment variables
+python-dotenv>=1.0.0
+
+# Database
+dj-database-url>=2.1.0
+psycopg>=3.3.2
+
+# Web server
+gunicorn>=23.0.0
+whitenoise>=6.8.0
