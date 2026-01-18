@@ -197,9 +197,12 @@ class Media(models.Model):
         elif self.is_tv_show:
             try:
                 return self.tvshow
-            except Movie.DoesNotExist:
+            except TVShow.DoesNotExist:
                 return self
         return self
+
+
+class Movie(Media):
     """
     Movie model extending Media base class.
 
