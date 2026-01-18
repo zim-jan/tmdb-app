@@ -289,19 +289,15 @@ def media_detail_view(request: HttpRequest, media_id: int) -> HttpResponse:
         if tmdb_data and tmdb_data.get('seasons'):
             for season in tmdb_data.get('seasons', []):
                 season_num = season.get('season_number', 0)
-                episode_count = season.get('episode_count', 20)  # Default to 20 if not available
-                seasons_with_episodes.append({
-                    'season_number': season_num,
-                    'episode_count': episode_count
-                })
-        else:
-            # Fallback: assume 20 episodes per season
-            if tv_show:
-                for i in range(tv_show.number_of_seasons):
+                episode_count = season.get('episode_count')
+                # Only include if episode_count is available (don't guess)
+                if episode_count:
                     seasons_with_episodes.append({
-                        'season_number': i,
-                        'episode_count': 20
+                        'season_number': season_num,
+                        'episode_count': episode_count
                     })
+        # If no seasons data available, skip showing season list
+        # Better to show nothing than incorrect episode counts
 
     return render(request, "media/detail.html", {
         "media": media,
