@@ -17,3 +17,5 @@ psycopg>=3.3.2
 # Web server
 gunicorn>=23.0.0
 whitenoise>=6.8.0
+# CORS support
+django-cors-headers>=4.3.0
