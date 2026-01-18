@@ -10,8 +10,8 @@ from users.models import User
 class UserAdmin(BaseUserAdmin):
     """Admin interface for User model."""
 
-    list_display = ["username", "email", "nickname", "is_2fa_enabled", "created_at"]
-    list_filter = ["is_2fa_enabled", "is_staff", "is_active", "created_at"]
+    list_display = ["username", "email", "nickname", "created_at"]
+    list_filter = ["is_staff", "is_active", "created_at"]
     search_fields = ["username", "email", "nickname"]
     ordering = ["-created_at"]
 
@@ -19,7 +19,7 @@ class UserAdmin(BaseUserAdmin):
         (
             "Custom Fields",
             {
-                "fields": ("nickname", "is_2fa_enabled"),
+                "fields": ("nickname",),
             },
         ),
     )

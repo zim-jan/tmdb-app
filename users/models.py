@@ -37,10 +37,6 @@ class User(AbstractUser):
         unique=True,
         help_text="User's public nickname for profile sharing",
     )
-    is_2fa_enabled = models.BooleanField(
-        default=False,
-        help_text="Whether two-factor authentication is enabled",
-    )
     created_at = models.DateTimeField(
         auto_now_add=True,
         help_text="Timestamp when the user account was created",
